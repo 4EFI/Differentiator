@@ -36,8 +36,7 @@ struct DiffNode
 
 //-----------------------------------------------------------------------------
 
-int SaveDiffData( Node* node, const char* fileName );
-int LoadDiffData( Node* node, FILE* file, int side = 0 );
+int LoadDiffData( Tree* tree, const char* diffData );
 
 int CreatePath( Tree* tree, Node* node, Stack* stk );
 

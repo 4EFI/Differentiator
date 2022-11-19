@@ -11,19 +11,22 @@
 #include "LOG.h"
 #include "my_assert.h"
 #include "stack.h"
+#include "file_algs.h"
+#include "str_algs.h"
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffDataRecursive( Node* node, FILE* file, int side )
+int LoadDiffDataRecursively( Node* node, const char* diffData, int side = 0 )
 {
-    ASSERT( node != NULL, 0 );
-    ASSERT( file != NULL, 0 );
+    ASSERT( node     != NULL, 0 );
+    ASSERT( diffData != NULL, 0 );
 	
-	char* data = ( char* )calloc( MaxStr, sizeof( char ) );
+    /*
+    char* data = ( char* )calloc( MaxStr, sizeof( char ) );
     
     char curSym = fgetc( file );
 
-    if( curSym == '{' )
+    if( curSym == '(' )
     {
         fscanf( file, " \"%[^\"]\" ", data );
 
@@ -37,13 +40,13 @@ int LoadDiffDataRecursive( Node* node, FILE* file, int side )
         if( curSym != ' ' ) break; // skip spaces
     }    
 
-    if( curSym == '{' )
+    if( curSym == ')' )
     {
         ungetc( curSym, file );
-        LoadAkinatorData( TreeAddChild( node, "", LEFT_SIDE ), file, LEFT_SIDE ); 
+        LoadAkinatorData( TreeAddChild( node, "", LEFT_SIDE ), diffData, LEFT_SIDE ); 
     }
 
-    if( curSym == '}' && side == LEFT_SIDE ) 
+    if( curSym == ')' && side == LEFT_SIDE ) 
     {
         return 1;
     }
@@ -54,43 +57,27 @@ int LoadDiffDataRecursive( Node* node, FILE* file, int side )
         if( curSym != ' ' ) break; // skip spaces
     }
 
-    if( curSym == '{' )
+    if( curSym == ')' )
     {   
         ungetc( curSym, file );
-        LoadAkinatorData( TreeAddChild( node, "", RIGHT_SIDE ), file, RIGHT_SIDE );  
+        LoadAkinatorData( TreeAddChild( node, "", RIGHT_SIDE ), diffData, RIGHT_SIDE );  
     }
 
     if( curSym == '}' && side == RIGHT_SIDE ) 
     {
         return 1;
     }
+    */
 
     return 1;
 }
 
-//-----------------------------------------------------------------------------
-
-int SaveDiffDataRecursively( Node* node, const char* fileName )
-{  
-    ASSERT( node != NULL && fileName != NULL, 0 );    
-    
-    FILE* file = fopen( fileName, "w" );
-    if(  !file  ) return 0;
-
-    PrintPreorderNodes( node, file );
-
-    fclose( file );
-    return  1;
-}
-
-int SaveDiffData( Tree* tree, const char* fileName )
+int LoadDiffData( Tree* tree, const char* diffData ) 
 {
     ASSERT( tree     != NULL, 0 );
-    ASSERT( fileName != NULL, 0 );
-    
-    SaveDiffDataRecursively( &tree->headNode, FileName );
+    ASSERT( diffData != NULL, 0 );
 
-    return 1;
+    return LoadDiffDataRecursively( &tree->headNode, diffData );
 }
 
 //-----------------------------------------------------------------------------

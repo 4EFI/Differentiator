@@ -1,8 +1,14 @@
 
 #include "config.h"
 
+#include <stdlib.h>
+
 #include "differentiator.h"
 #include "tree.h"
+#include "file_algs.h"
+#include "str_algs.h"
+
+#include "LOG.h"
 
 //-----------------------------------------------------------------------------
 
@@ -13,11 +19,17 @@ int main()
 
     const char* fileDataName = "diff_data.txt";
     FILE* file = fopen( fileDataName, "r" ); 
+
+    char* diffData = NULL;
+    ReadAllFile( file, &diffData );
+
+    LOG( "%s", diffData );
     
-    LoadDiffData( &diffTree.headNode, file );
+    LoadDiffData( &diffTree, diffData );
     fclose( file );
 
-    TreeDump( &diffTree );
+    free( diffData );
+    TreeGraphDump( &diffTree );
 }
 
 //-----------------------------------------------------------------------------
