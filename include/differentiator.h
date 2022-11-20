@@ -15,6 +15,13 @@ static const char* FileDiffDumpName = "diff_dump.html";
 
 //-----------------------------------------------------------------------------
 
+enum Types
+{
+    OP_TYPE, 
+    VAL_TYPE, 
+    VAR_TYPE
+};
+
 enum OperationTypes
 {
     OP_ADD, 
@@ -47,12 +54,14 @@ int GetOperationType( const char* op,
                       Operation*  operations    = Operations, 
                       int         numOperations = NumOperations );
 
-int PrintOperation( FILE*      file,
+int PrintOperation( char*      str,
                     int        numOp, 
                     Operation* operations    = Operations, 
                     int        numOperations = NumOperations );
 
-int PrintInorderNodes( Node* node, FILE* file );     
+int PrintDiffNodeValue( char* str, Node* node );
+
+int PrintLatexFormula( Tree* tree, FILE* file );     
 
 // DiffDump 
 // {

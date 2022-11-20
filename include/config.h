@@ -1,13 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-enum Types
-{
-    OP_TYPE, 
-    VAL_TYPE, 
-    VAR_TYPE
-};
-
 struct DiffNode
 {
     int type; 

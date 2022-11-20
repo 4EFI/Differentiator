@@ -1,5 +1,4 @@
 
-
 #include "config.h"
 
 #include <stdio.h>
@@ -121,16 +120,16 @@ int GetOperationType( const char* opStr, Operation* operations, int numOperation
 
 //-----------------------------------------------------------------------------
 
-int PrintOperation( FILE* file, int numOp, Operation* operations, int numOperations )
+int PrintOperation( char* str, int numOp, Operation* operations, int numOperations )
 {
+    ASSERT( str        != NULL, 0 );
     ASSERT( operations != NULL, 0 );
-    ASSERT( file       != NULL, 0 );
 
     for( int i = 0; i < numOperations; i++ )
     {
         if( operations[i].opType == numOp )
         {
-            fprintf( file, "%s", operations[i].opStr );
+            sprintf( str, "%s", operations[i].opStr );
             return 1;
         }
     }
@@ -140,7 +139,7 @@ int PrintOperation( FILE* file, int numOp, Operation* operations, int numOperati
 
 //-----------------------------------------------------------------------------
 
-int PrintInorderNodes( Node* node, FILE* file ) 
+int PrintLatexFormulaRecursively( Node* node, FILE* file ) 
 {
     ASSERT( node != NULL, 0 );
     ASSERT( file != NULL, 0 );  
@@ -154,29 +153,61 @@ int PrintInorderNodes( Node* node, FILE* file )
 
     if( node->left )  
     {
-        PrintInorderNodes( node->left, file );
+        PrintLatexFormulaRecursively( node->left, file );
     }
     
-    if/* */( node->value->type == VAL_TYPE )
-    {
-        fprintf( file, "%g", node->value->dblValue );
-    }
-    else if( node->value->type == OP_TYPE )
-    {
-        PrintOperation( stdout, node->value->opValue );
-    }
-    else if( node->value->type == VAR_TYPE )
-    {
-        fprintf( file, "%s", node->value->varValue );
-    }
+    char strValue[ MaxStrLen ] = "";
+    PrintDiffNodeValue( strValue, node );
+
+    fprintf( file, "%s", strValue );
     
     if( node->right ) 
     {
-        PrintInorderNodes( node->right, file );
+        PrintLatexFormulaRecursively( node->right, file );
     }
     
     fprintf( file, " )" );
 
+    return 1;
+}
+
+int PrintLatexFormula( Tree* tree, FILE* file )
+{
+    ASSERT( tree != NULL, 0 );
+    ASSERT( file != NULL, 0 );
+
+    fprintf( file, "$$ " );
+    
+    PrintLatexFormulaRecursively( &tree->headNode, file );
+
+    fprintf( file, " $$" );
+    
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+int PrintDiffNodeValue( char* str, Node* node )
+{
+    ASSERT( str  != NULL, 0 );
+    ASSERT( node != NULL, 0 );
+    
+    if/* */( node->value->type == VAL_TYPE )
+    {
+        sprintf( str, "%g", node->value->dblValue );
+        return VAL_TYPE;
+    }
+    else if( node->value->type == OP_TYPE )
+    {
+        PrintOperation( str, node->value->opValue );
+        return OP_TYPE;
+    }
+    else if( node->value->type == VAR_TYPE )
+    {
+        sprintf( str, "%s", node->value->varValue );
+        return VAR_TYPE;
+    }
+    
     return 1;
 }
 
@@ -204,19 +235,17 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
 
     int   typeNum = node->value->type;
     char* typeStr = NULL;
+    char* color   = NULL;
 
-    if/* */( typeNum == Types::OP_TYPE  ) typeStr = "Operation";
-    else if( typeNum == Types::VAL_TYPE ) typeStr = "Constant";
-    else if( typeNum == Types::VAR_TYPE ) typeStr = "Variable";
+    if/* */( typeNum == Types::OP_TYPE  ) { typeStr = "op"  ; color = "lightgrey"  ; }
+    else if( typeNum == Types::VAL_TYPE ) { typeStr = "val" ; color = "lightgreen" ; }
+    else if( typeNum == Types::VAR_TYPE ) { typeStr = "var" ; color = "lightgreen" ; }
 
     char valueStr[ MaxStrLen ] = "";
-
+    PrintDiffNodeValue( valueStr, node );
     
-    
-    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s |  \" ];\n", 
-                       *nodeNum, 
-                        node->left == NULL &&  node->right == NULL ? "lightgrey" : "lightgreen",
-                        typeStr );                                      
+    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s | %s \" ];\n", 
+                       *nodeNum, color, typeStr, valueStr );                                      
 
     if( node->left )
     {

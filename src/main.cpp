@@ -26,7 +26,7 @@ int main()
     LoadDiffData( &diffTree, diffData );
     fclose( file );
 
-    PrintInorderNodes( &diffTree.headNode, stdout );
+    PrintLatexFormula( &diffTree, stdout );
 
     DiffGraphDump( &diffTree );
 
