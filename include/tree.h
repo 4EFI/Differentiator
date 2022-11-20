@@ -7,8 +7,6 @@
 
 static const TreeElem_t NODE_POISON = ( TreeElem_t )0x5E32DEAD;
 
-static const char* FileTreeDumpName = "tree_dump.html";
-
 enum NodeSides
 {
     LEFT_SIDE  = -1,
@@ -32,8 +30,6 @@ struct Node
 int NodeCtor( Node* node );
 int NodeDtor( Node* node );
 
-int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum );
-
 //-----------------------------------------------------------------------------
 
 struct Tree
@@ -50,9 +46,6 @@ Node* TreeSetNodeValue( Node* node, TreeElem_t val );
 Node* TreeAddChild    ( Node* node, TreeElem_t val, int side );
 
 Node* TreeSearch( Node* nodeBegin, TreeElem_t val );
-
-FILE* TreeCreateDotDumpFile( Node* node, const char* fileName );
-int   TreeGraphDump( Tree* tree );
 
 //-----------------------------------------------------------------------------
 

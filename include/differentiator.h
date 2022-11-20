@@ -11,6 +11,10 @@
 
 //-----------------------------------------------------------------------------
 
+static const char* FileDiffDumpName = "diff_dump.html";
+
+//-----------------------------------------------------------------------------
+
 enum OperationTypes
 {
     OP_ADD, 
@@ -37,23 +41,26 @@ static int NumOperations = sizeof( Operations ) / sizeof( Operation );
 
 //-----------------------------------------------------------------------------
 
-int 
-LoadDiffData( Tree*       tree, 
-              const char* diffData );
+int LoadDiffData( Tree* tree, const char* diffData );
 
 int GetOperationType( const char* op, 
                       Operation*  operations    = Operations, 
                       int         numOperations = NumOperations );
 
-int 
-PrintOperation( FILE* file,
-                int        numOp, 
-                Operation* operations    = Operations, 
-                int        numOperations = NumOperations );
+int PrintOperation( FILE*      file,
+                    int        numOp, 
+                    Operation* operations    = Operations, 
+                    int        numOperations = NumOperations );
 
-int 
-PrintInorderNodes( Node* node, 
-                   FILE* file );                      
+int PrintInorderNodes( Node* node, FILE* file );     
+
+// DiffDump 
+// {
+int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum ); 
+
+FILE* DiffCreateDotDumpFile( Node* node, const char* fileName );
+int   DiffGraphDump( Tree* tree );
+// } 
 
 //-----------------------------------------------------------------------------
 

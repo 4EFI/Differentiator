@@ -28,7 +28,7 @@ int main()
 
     PrintInorderNodes( &diffTree.headNode, stdout );
 
-    TreeGraphDump( &diffTree );
+    DiffGraphDump( &diffTree );
 
     free    (  diffData );
     TreeDtor( &diffTree );

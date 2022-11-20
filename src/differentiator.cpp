@@ -18,6 +18,10 @@
 
 //-----------------------------------------------------------------------------
 
+FILE* FileDiffDump = fopen( FileDiffDumpName, "w" );
+
+//-----------------------------------------------------------------------------
+
 int SetDiffNode( Node* node, const char* diffData )
 {
     ASSERT( node     != NULL, 0 );
@@ -177,3 +181,105 @@ int PrintInorderNodes( Node* node, FILE* file )
 }
 
 //-----------------------------------------------------------------------------
+
+
+// DiffDump
+//-----------------------------------------------------------------------------
+
+int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
+{
+    ASSERT( dotFile != NULL && nodeNum != NULL, 0 );
+    
+    int leftNum  = 0;
+    int rightNum = 0;
+    
+    if/* */( node->left )
+    {
+        leftNum  = GraphVizNodes( node->left,  dotFile, nodeNum );
+    }    
+    if( node->right )
+    {   
+        rightNum = GraphVizNodes( node->right, dotFile, nodeNum );
+    }
+
+    int   typeNum = node->value->type;
+    char* typeStr = NULL;
+
+    if/* */( typeNum == Types::OP_TYPE  ) typeStr = "Operation";
+    else if( typeNum == Types::VAL_TYPE ) typeStr = "Constant";
+    else if( typeNum == Types::VAR_TYPE ) typeStr = "Variable";
+
+    char valueStr[ MaxStrLen ] = "";
+
+    
+    
+    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s |  \" ];\n", 
+                       *nodeNum, 
+                        node->left == NULL &&  node->right == NULL ? "lightgrey" : "lightgreen",
+                        typeStr );                                      
+
+    if( node->left )
+    {
+        fprintf( dotFile, "\t\"node%d\" -> \"node%d\"\n", *nodeNum, leftNum );
+    }
+    if( node->right )
+    {
+        fprintf( dotFile, "\t\"node%d\" -> \"node%d\"\n", *nodeNum, rightNum );
+    }
+
+    (*nodeNum)++;
+    return *nodeNum - 1;
+}
+
+//-----------------------------------------------------------------------------
+
+FILE* DiffCreateDotDumpFile( Node* node, const char* fileName )
+{
+    ASSERT( node != NULL, NULL );
+
+    FILE* tempDotFile = fopen( fileName, "w" );
+
+    fprintf( tempDotFile, "digraph ListDump\n" );
+    fprintf( tempDotFile, "{\n" );
+    {
+        int curNodeNum = 1;  
+        GraphVizNodes( node, tempDotFile, &curNodeNum );
+    }
+    fprintf( tempDotFile, "}\n" );
+
+    return tempDotFile;
+}
+
+//-----------------------------------------------------------------------------
+
+int DiffGraphDump( Tree* tree )
+{
+    ASSERT( tree != NULL, 0 );
+
+    fclose( FileDiffDump );
+    FileDiffDump = fopen( FileDiffDumpName, "w" );
+
+    const char* tempDotFileName = "tempGraphVizTree.dot"; 
+    FILE*       tempDotFile = DiffCreateDotDumpFile( &tree->headNode, tempDotFileName );
+    fclose(     tempDotFile     );
+
+    char graphName[MaxStrLen] = "img/graph.png";
+
+    CreateGraphVizImg( tempDotFileName, graphName, "png" );
+
+    // Delete temp file
+    remove( tempDotFileName );
+
+    // Create html file
+    fprintf( FileDiffDump, "<pre>" );
+
+    fprintf( FileDiffDump, "<img src = \"%s\", style = \" max-width: 95vw \">", graphName );
+    fprintf( FileDiffDump, "<hr>" );
+
+    fclose( FileDiffDump );
+
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+// End DiffDump
