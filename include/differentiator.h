@@ -27,21 +27,28 @@ enum OperationTypes
     OP_ADD, 
     OP_SUB,
     OP_MUL,
-    OP_DIV 
+    OP_DIV,
+    OP_DEG,
+    OP_SIN
 };
 
 struct Operation
 {
     int opType;
     const char* opStr;
+    const char* opTexStrBegin;
+    const char* opTexStrValue;
+    const char* opTexStrEnd;
 };
 
 static Operation Operations[] = 
-{
-    { OP_ADD, "+" },
-    { OP_SUB, "-" },
-    { OP_MUL, "*" },
-    { OP_DIV, "/" }
+{  
+    { OP_ADD, "+",   "",         " + ",       ""   },
+    { OP_SUB, "-",   "",         " - ",       ""   },
+    { OP_MUL, "*",   "",         " \\cdot ",  ""   },
+    { OP_DIV, "/",   "\\dfrac{ ", " }{ ",     " }" },
+    { OP_DEG, "^",   "",          "^{ ",      " }" },
+    { OP_SIN, "sin", "",          "\\sin{ ",  " }" }
 };
 
 static int NumOperations = sizeof( Operations ) / sizeof( Operation );
@@ -53,6 +60,10 @@ int LoadDiffData( Tree* tree, const char* diffData );
 int GetOperationType( const char* op, 
                       Operation*  operations    = Operations, 
                       int         numOperations = NumOperations );
+
+int GetIndexOperation( int        numOp, 
+                       Operation* operations    = Operations, 
+                       int        numOperations = NumOperations );
 
 int PrintOperation( char*      str,
                     int        numOp, 

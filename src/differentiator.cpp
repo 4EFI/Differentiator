@@ -21,7 +21,7 @@ FILE* FileDiffDump = fopen( FileDiffDumpName, "w" );
 
 //-----------------------------------------------------------------------------
 
-int SetDiffNode( Node* node, const char* diffData )
+int SetDiffNode( Node* node, const char* diffData, int* numOp )
 {
     ASSERT( node     != NULL, 0 );
     ASSERT( diffData != NULL, 0 );
@@ -42,7 +42,7 @@ int SetDiffNode( Node* node, const char* diffData )
     {
         char* tempStr = ( char* )calloc( MaxStrLen, sizeof( char ) );
 
-        sscanf( diffData, " %[^()]%n ", tempStr, &numReadSyms );
+        sscanf( diffData, " %[^ ()]%n ", tempStr, &numReadSyms );
 
         int opType = GetOperationType( tempStr );
 
@@ -54,7 +54,9 @@ int SetDiffNode( Node* node, const char* diffData )
         else
         {
             node->value->type    = Types::OP_TYPE;
-            node->value->opValue = opType;    
+            node->value->opValue = opType;   
+
+            (*numOp) = opType; 
         }
     }
 
@@ -67,6 +69,7 @@ int LoadDiffData( Tree* tree, const char* diffData )
     ASSERT( diffData != NULL, 0 );
 
     Node* currNode = &tree->headNode;
+    int   currOp   = -1;
 
     int len = strlen( diffData );
     for( int i = 0; i < len; i++ )
@@ -93,7 +96,7 @@ int LoadDiffData( Tree* tree, const char* diffData )
             continue;
         }
 
-        i += SetDiffNode( currNode, diffData + i );
+        i += SetDiffNode( currNode, diffData + i, &currOp );
         i --;
     }
 
@@ -125,13 +128,23 @@ int PrintOperation( char* str, int numOp, Operation* operations, int numOperatio
     ASSERT( str        != NULL, 0 );
     ASSERT( operations != NULL, 0 );
 
+    int indOp = GetIndexOperation( numOp, operations, numOperations );     
+    if( indOp == -1 ) return -1; 
+    
+    sprintf( str, " %s ", operations[ indOp ].opStr );
+            
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+int GetIndexOperation( int numOp, Operation* operations, int numOperations )
+{
+    ASSERT( operations != NULL, 0 );
+
     for( int i = 0; i < numOperations; i++ )
     {
-        if( operations[i].opType == numOp )
-        {
-            sprintf( str, "%s", operations[i].opStr );
-            return 1;
-        }
+        if( operations[i].opType == numOp ) return i;
     }
 
     return -1;
@@ -139,33 +152,49 @@ int PrintOperation( char* str, int numOp, Operation* operations, int numOperatio
 
 //-----------------------------------------------------------------------------
 
+#define PrintTex( pos )                                             \
+{                                                                   \
+    if( node->value->type == Types::OP_TYPE )                       \
+    {                                                               \
+        int indOp = GetIndexOperation( node->value->opValue );      \
+        if( indOp == -1 ) return -1;                                \
+                                                                    \
+        fprintf( file, "%s", (Operations[ indOp ]).opTexStr##pos ); \
+    }                                                               \
+}
+
 int PrintLatexFormulaRecursively( Node* node, FILE* file ) 
 {
-    ASSERT( node != NULL, 0 );
-    ASSERT( file != NULL, 0 );  
+    ASSERT( node        != NULL, 0 );
+    ASSERT( node->value != NULL, 0 );
+    ASSERT( file        != NULL, 0 );  
 
-    fprintf( file, "( " ); 
-
-    if( node->value->type == OP_TYPE && node->value->opValue == OP_DIV )
-    {
-        fprintf( file, "dfrac{ " );
-    }
+    fprintf( file, "( " );
+    PrintTex( Begin );
 
     if( node->left )  
     {
         PrintLatexFormulaRecursively( node->left, file );
     }
     
-    char strValue[ MaxStrLen ] = "";
-    PrintDiffNodeValue( strValue, node );
+    if( node->value->type != OP_TYPE )
+    {
+        char strValue[ MaxStrLen ] = "";
+        PrintDiffNodeValue( strValue, node );
 
-    fprintf( file, "%s", strValue );
+        fprintf( file, "%s", strValue );
+    }
+    else
+    {
+        PrintTex( Value );
+    }
     
     if( node->right ) 
     {
         PrintLatexFormulaRecursively( node->right, file );
     }
-    
+
+    PrintTex( End );
     fprintf( file, " )" );
 
     return 1;
@@ -181,7 +210,7 @@ int PrintLatexFormula( Tree* tree, FILE* file )
     PrintLatexFormulaRecursively( &tree->headNode, file );
 
     fprintf( file, " $$" );
-    
+
     return 1;
 }
 
