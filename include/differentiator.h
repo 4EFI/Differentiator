@@ -6,39 +6,54 @@
 #include "tree.h"
 #include "stack.h"
 
-#include  <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 //-----------------------------------------------------------------------------
 
-struct DiffNode
+enum OperationTypes
 {
-    enum 
-    { 
-        OP_TYPE, 
-        OP_VAL, 
-        OP_VAR 
-    } 
-    type; 
-
-    // union in progress
-    double dblValue;
-    enum 
-    {
-        OP_ADD, 
-        OP_SUB,
-        OP_MUL,
-        OP_DIV 
-    } 
-    opValue;
-    const char* varValue;
+    OP_ADD, 
+    OP_SUB,
+    OP_MUL,
+    OP_DIV 
 };
 
+struct Operation
+{
+    int opType;
+    const char* opStr;
+};
+
+static Operation Operations[] = 
+{
+    { OP_ADD, "+" },
+    { OP_SUB, "-" },
+    { OP_MUL, "*" },
+    { OP_DIV, "/" }
+};
+
+static int NumOperations = sizeof( Operations ) / sizeof( Operation );
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffData( Tree* tree, const char* diffData );
+int 
+LoadDiffData( Tree*       tree, 
+              const char* diffData );
 
-int CreatePath( Tree* tree, Node* node, Stack* stk );
+int GetOperationType( const char* op, 
+                      Operation*  operations    = Operations, 
+                      int         numOperations = NumOperations );
+
+int 
+PrintOperation( FILE* file,
+                int        numOp, 
+                Operation* operations    = Operations, 
+                int        numOperations = NumOperations );
+
+int 
+PrintInorderNodes( Node* node, 
+                   FILE* file );                      
 
 //-----------------------------------------------------------------------------
 

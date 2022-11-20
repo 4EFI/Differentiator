@@ -32,8 +32,6 @@ struct Node
 int NodeCtor( Node* node );
 int NodeDtor( Node* node );
 
-int PrintPreorderNodes( Node* node, FILE* file );
-
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum );
 
 //-----------------------------------------------------------------------------

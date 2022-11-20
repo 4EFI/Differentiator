@@ -22,14 +22,16 @@ int main()
 
     char* diffData = NULL;
     ReadAllFile( file, &diffData );
-
-    LOG( "%s", diffData );
     
     LoadDiffData( &diffTree, diffData );
     fclose( file );
 
-    free( diffData );
+    PrintInorderNodes( &diffTree.headNode, stdout );
+
     TreeGraphDump( &diffTree );
+
+    free    (  diffData );
+    TreeDtor( &diffTree );
 }
 
 //-----------------------------------------------------------------------------

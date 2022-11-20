@@ -1,9 +1,24 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-typedef const char* TreeElem_t;
+enum Types
+{
+    OP_TYPE, 
+    VAL_TYPE, 
+    VAR_TYPE
+};
 
-#define NVOICE
+struct DiffNode
+{
+    int type; 
+
+    // union in progress
+    double dblValue;
+    int    opValue;
+    char*  varValue;
+};
+
+typedef DiffNode* TreeElem_t;
 
 struct Node;
 

@@ -48,28 +48,6 @@ int NodeDtor( Node* node )
 
 //-----------------------------------------------------------------------------
 
-int PrintPreorderNodes( Node* node, FILE* file ) 
-{
-    ASSERT( node != NULL && file != NULL, 0 );
-
-    fprintf( file, "{ \"%s\" ", node->value );
-
-    if( node->left )  
-    {
-        PrintPreorderNodes( node->left, file );
-    }
-    if( node->right ) 
-    {
-        PrintPreorderNodes( node->right, file );
-    }
-    
-    fprintf( file, "} " );
-
-    return 1;
-}
-
-//-----------------------------------------------------------------------------
-
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
 {
     ASSERT( dotFile != NULL && nodeNum != NULL, 0 );
@@ -85,11 +63,18 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
     {   
         rightNum = GraphVizNodes( node->right, dotFile, nodeNum );
     }
+
+    int   typeNum = node->value->type;
+    char* typeStr = NULL;
+
+    if/* */( typeNum == Types::OP_TYPE  ) typeStr = "Operation";
+    else if( typeNum == Types::VAL_TYPE ) typeStr = "Constant";
+    else if( typeNum == Types::VAR_TYPE ) typeStr = "Variable";
     
-    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s\" ];\n", 
+    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s |  \" ];\n", 
                        *nodeNum, 
                         node->left == NULL &&  node->right == NULL ? "lightgrey" : "lightgreen",
-                        node->value );                                      
+                        typeStr );                                      
 
     if( node->left )
     {
@@ -236,7 +221,7 @@ Node* TreeSearch( Node* nodeBegin, TreeElem_t val )
         rightNode = TreeSearch( nodeBegin->right, val );
     }
 
-    if/* */( stricmp( nodeBegin->value, val ) == 0 ) 
+    if( nodeBegin->value, val ) 
     {
         return nodeBegin;
     }
