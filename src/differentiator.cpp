@@ -267,6 +267,77 @@ int PrintDiffNodeValue( char* str, Node* node )
 
 //-----------------------------------------------------------------------------
 
+Node* DiffNode(Node* node)
+{
+    ASSERT( node != NULL, 0 );
+
+    /*
+    switch (node->type)
+    {
+        case VAL_TYPE:
+            return CREATENUM(0);
+
+        case VAR_TYPE:
+            if( *(node->varvalue) == 'x' ) return CREATENUM(1);
+            else                           return CREATENUM(0);
+
+        /*
+        case OP_TYPE:
+            switch (node->optype)
+            {
+                case OP_ADD:
+                    return ADD(DL, DR);
+                case OP_SUB:
+                    return SUB(DL, DR);
+                case OP_MUL:
+                    return ADD(MUL(DL, CR), MUL(CL, DR));
+                case OP_DIV:
+                    return DIV(SUB(MUL(DL, CR), MUL(CL, DR)), POWER(CR, CREATENUM(2)));
+                case OP_SIN:
+                    return MUL(COS(NULL, CR), DR);
+                case OP_COS:
+                    return MUL(MUL(SIN(NULL, CR), CREATENUM(-1)), DR);
+                case OP_POWER:
+                    return DiffPower(node);
+                case OP_LOG:
+                    return DiffLog(node);
+                case OP_LN:
+                    return MUL(DIV(CREATENUM(1), CR), DR);
+                case OP_TG:
+                    return MUL(DIV(CREATENUM(1), POWER(COS(NULL, CR), CREATENUM(2))), DR);
+                case OP_CTG:
+                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), POWER(SIN(NULL, CR), CREATENUM(2)))), DR);
+                case OP_SQRT:
+                    return MUL(DIV(CREATENUM(1), MUL(CREATENUM(2), SQRT(NULL, CR))), DR);
+                case OP_ARCSIN:
+                    return MUL(DIV(CREATENUM(1), SQRT(NULL, SUB(CREATENUM(1), POWER(CR, CREATENUM(2))))), DR);
+                case OP_ARCCOS:
+                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), SQRT(NULL, SUB(CREATENUM(1), POWER(CR, CREATENUM(2)))))), DR);
+                case OP_ARCTG:
+                    return MUL(DIV(CREATENUM(1), ADD(CREATENUM(1), POWER(CR, CREATENUM(2)))), DR);
+                case OP_ARCCTG:
+                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), ADD(CREATENUM(1), POWER(CR, CREATENUM(2))))), DR);
+                case OP_SH:
+                    return MUL(CH(NULL, CR), DR);
+                case OP_CH:
+                    return MUL(SH(NULL, CR), DR);
+                case OP_UNKNOWN:
+                    return node;
+                default:
+                    return node;
+            }
+        case UNKNOWN_TYPE:
+            break;
+        default:
+            break;
+    }
+    */
+
+    return node;
+}
+
+//-----------------------------------------------------------------------------
+
 
 // DiffDump
 //-----------------------------------------------------------------------------
