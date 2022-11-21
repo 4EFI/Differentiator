@@ -45,6 +45,7 @@ int SetDiffNode( Node* node, const char* diffData, int* numOp )
         sscanf( diffData, " %[^ ()]%n ", tempStr, &numReadSyms );
 
         int opType = GetOperationType( tempStr );
+        (*numOp)   = opType; 
 
         if( opType == -1 )
         {
@@ -52,11 +53,9 @@ int SetDiffNode( Node* node, const char* diffData, int* numOp )
             node->value->varValue = tempStr;    
         }
         else
-        {
+        {  
             node->value->type    = Types::OP_TYPE;
             node->value->opValue = opType;   
-
-            (*numOp) = opType; 
         }
     }
 
@@ -98,9 +97,28 @@ int LoadDiffData( Tree* tree, const char* diffData )
 
         i += SetDiffNode( currNode, diffData + i, &currOp );
         i --;
+
+        if( IsUnaryOperation( currOp ) >= 0 )
+        {
+            TreeAddChild( currNode, NULL, LEFT_SIDE );
+        }
     }
 
     return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+int IsUnaryOperation( int numOp, int* unaryOpearations, int numUnaryOperations )
+{
+    ASSERT( unaryOpearations != NULL, 0 );
+
+    for( int i = 0; i < numUnaryOperations; i++ )
+    {
+        if( unaryOpearations[i] == numOp ) return i;
+    }
+
+    return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,8 +184,9 @@ int GetIndexOperation( int numOp, Operation* operations, int numOperations )
 int PrintLatexFormulaRecursively( Node* node, FILE* file ) 
 {
     ASSERT( node        != NULL, 0 );
-    ASSERT( node->value != NULL, 0 );
-    ASSERT( file        != NULL, 0 );  
+    ASSERT( file        != NULL, 0 );
+
+    if( node->value == NULL ) return 0; 
 
     fprintf( file, "( " );
     PrintTex( Begin );
@@ -220,6 +239,12 @@ int PrintDiffNodeValue( char* str, Node* node )
 {
     ASSERT( str  != NULL, 0 );
     ASSERT( node != NULL, 0 );
+
+    if( !node->value )
+    {
+        sprintf( str, "" );
+        return 0;
+    }
     
     if/* */( node->value->type == VAL_TYPE )
     {
@@ -262,9 +287,11 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
         rightNum = GraphVizNodes( node->right, dotFile, nodeNum );
     }
 
-    int   typeNum = node->value->type;
+    int   typeNum = VAL_TYPE;
     char* typeStr = NULL;
     char* color   = NULL;
+
+    if( node->value != NULL ) typeNum = node->value->type; 
 
     if/* */( typeNum == Types::OP_TYPE  ) { typeStr = "op"  ; color = "lightgrey"  ; }
     else if( typeNum == Types::VAL_TYPE ) { typeStr = "val" ; color = "lightgreen" ; }

@@ -43,19 +43,30 @@ struct Operation
 
 static Operation Operations[] = 
 {  
-    { OP_ADD, "+",   "",         " + ",       ""   },
-    { OP_SUB, "-",   "",         " - ",       ""   },
-    { OP_MUL, "*",   "",         " \\cdot ",  ""   },
-    { OP_DIV, "/",   "\\dfrac{ ", " }{ ",     " }" },
-    { OP_DEG, "^",   "",          "^{ ",      " }" },
-    { OP_SIN, "sin", "",          "\\sin{ ",  " }" }
+    { OP_ADD, "+",   "",          " + ",       ""   },
+    { OP_SUB, "-",   "",          " - ",       ""   },
+    { OP_MUL, "*",   "",          " \\cdot ",  ""   },
+    { OP_DIV, "/",   "\\dfrac{ ", " }{ ",      " }" },
+    { OP_DEG, "^",   "",          "^{ ",       " }" },
+    { OP_SIN, "sin", "",          "\\sin{ ",   " }" }
 };
 
 static int NumOperations = sizeof( Operations ) / sizeof( Operation );
 
+static int UnaryOperations[] = 
+{
+    OP_SIN
+};
+
+static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int ); 
+
 //-----------------------------------------------------------------------------
 
 int LoadDiffData( Tree* tree, const char* diffData );
+
+int IsUnaryOperation( int  numOp, 
+                      int* unaryOperations    = UnaryOperations,
+                      int  numUnaryOperations = NumUnaryOperations );
 
 int GetOperationType( const char* op, 
                       Operation*  operations    = Operations, 
