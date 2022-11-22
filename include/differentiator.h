@@ -85,10 +85,12 @@ int PrintDiffNodeValue( char* str, Node* node );
 
 int PrintLatexFormula( Node* node, FILE* file );  
 
-Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right );
+Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL );
 Node* CopyNode( Node* node );
 
 Node* Differentiate( Node* node );
+
+Node* GetSimplifiedConstantNode( Node* node ); 
 
 // DiffDump 
 // {

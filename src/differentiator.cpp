@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <windows.h>
 
 #include "differentiator.h"
@@ -272,8 +273,7 @@ Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* rig
 {    
     Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
 
-    newNode->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
-    
+    newNode->value           = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );    
     newNode->value->type     = type;
     newNode->value->dblValue = dbl;
     newNode->value->opValue  = op;
@@ -292,6 +292,8 @@ Node* CopyNode( Node* node )
     ASSERT( node != NULL, 0 );
 
     Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
+
+    newNode->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
 
     memcpy( newNode,        node,        sizeof(     Node ) );
     memcpy( newNode->value, node->value, sizeof( DiffNode ) );
@@ -319,16 +321,16 @@ Node* DifferentiateNode( Node* node )
     switch( node->value->type )
     {
         case VAL_TYPE:
-            return CREATE_NUM_NODE( 0 );
+            return CREATE_VAL_NODE( 0 );
 
         case VAR_TYPE:
             if( *(node->value->varValue) == 'x' ) 
             {
-                return CREATE_NUM_NODE( 1 );
+                return CREATE_VAL_NODE( 1 );
             }
             else
             {
-                return CREATE_NUM_NODE( 0 );
+                return CREATE_VAL_NODE( 0 );
             }
 
         case OP_TYPE:
@@ -394,6 +396,55 @@ Node* Differentiate( Node* node )
     ASSERT( node != NULL, 0 );
 
     return DifferentiateNode( node );
+}
+
+//-----------------------------------------------------------------------------
+
+Node* GetSimplifiedConstantNode( Node* node )
+{
+    ASSERT( node != NULL, 0 );
+
+    if( node->value == NULL ) return NULL; 
+
+    if( IS_R_VAL )
+    {
+        if( IS_L_VAL )
+        {
+            int opNum = node->value->opValue;
+
+            switch( opNum )
+            {
+                case OP_ADD:
+                    return CREATE_VAL_NODE( COUNT( + ) );
+
+                case OP_SUB:
+                    return CREATE_VAL_NODE( COUNT( - ) );
+
+                case OP_MUL:
+                    return CREATE_VAL_NODE( COUNT( * ) );
+
+                case OP_DIV:
+                    return CREATE_VAL_NODE( COUNT( / ) );
+
+                case OP_DEG:
+                    return CREATE_VAL_NODE( pow( L_VAL, R_VAL ) );
+            
+                default:
+                    return NULL;
+            }            
+        }
+    }    
+
+    return NULL;
+}
+
+int SimplifyConstant( Node* node )
+{
+    ASSERT( node != NULL, 0 );
+
+
+
+    return 1;
 }
 
 //-----------------------------------------------------------------------------

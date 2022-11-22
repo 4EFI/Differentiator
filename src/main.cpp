@@ -32,7 +32,11 @@ int main()
     printf( "\n" );
     PrintLatexFormula(  newNode,  stdout );
 
-    DiffGraphDump( &diffTree );
+    newNode->left->left = GetSimplifiedConstantNode( newNode->left->left );
+
+    PrintLatexFormula(  newNode,  stdout );
+
+    DiffGraphDump( newNode );
 
     free(  diffData );
 }

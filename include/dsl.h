@@ -1,7 +1,20 @@
 #ifndef DSL_H
 #define DSL_H
 
-#define CREATE_NUM_NODE( NUM ) CreateNode( VAL_TYPE, NUM, -1, NULL, NULL, NULL) 
+// Right/Left node type
+#define IS_R_VAL node->right->value->type == Types::VAL_TYPE ? 1 : 0
+#define IS_L_VAL node->left ->value->type == Types::VAL_TYPE ? 1 : 0
+
+#define IS_R_OP node->right->value->type == Types::OP_TYPE ? 1 : 0
+#define IS_L_OP node->left ->value->type == Types::OP_TYPE ? 1 : 0
+
+// Right/left node dblValue
+#define R_VAL node->right->value->dblValue
+#define L_VAL node->left ->value->dblValue
+
+#define COUNT( OP ) L_VAL OP R_VAL 
+
+#define CREATE_VAL_NODE( NUM ) CreateNode( VAL_TYPE, NUM, -1, NULL, NULL, NULL) 
 #define CREATE_VAR_NODE( VAR ) CreateNode( VAR_TYPE, 0,   -1, #VAR, NULL, NULL)
 
 #define DL DifferentiateNode( node->left  )
