@@ -14,9 +14,9 @@
 
 int main()
 {
-    Tree       diffTree = { 0 };
-    TreeCtor( &diffTree );
-
+    Node       diffTree = { 0 };
+    NodeCtor( &diffTree );
+    
     const char* fileDataName = "diff_data.txt";
     FILE* file = fopen( fileDataName, "r" ); 
 
@@ -26,12 +26,15 @@ int main()
     LoadDiffData( &diffTree, diffData );
     fclose( file );
 
+    Node* newNode = Differentiate( &diffTree );
+
     PrintLatexFormula( &diffTree, stdout );
+    printf( "\n" );
+    PrintLatexFormula(  newNode,  stdout );
 
     DiffGraphDump( &diffTree );
 
-    free    (  diffData );
-    TreeDtor( &diffTree );
+    free(  diffData );
 }
 
 //-----------------------------------------------------------------------------

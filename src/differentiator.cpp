@@ -14,6 +14,7 @@
 #include "file_algs.h"
 #include "str_algs.h"
 #include "LOG.h"
+#include "dsl.h"
 
 //-----------------------------------------------------------------------------
 
@@ -62,12 +63,12 @@ int SetDiffNode( Node* node, const char* diffData, int* numOp )
     return numReadSyms; 
 }
 
-int LoadDiffData( Tree* tree, const char* diffData ) 
+int LoadDiffData( Node* node, const char* diffData ) 
 {
-    ASSERT( tree     != NULL, 0 );
+    ASSERT( node     != NULL, 0 );
     ASSERT( diffData != NULL, 0 );
 
-    Node* currNode = &tree->headNode;
+    Node* currNode = node;
     int   currOp   = -1;
 
     int len = strlen( diffData );
@@ -219,14 +220,14 @@ int PrintLatexFormulaRecursively( Node* node, FILE* file )
     return 1;
 }
 
-int PrintLatexFormula( Tree* tree, FILE* file )
+int PrintLatexFormula( Node* node, FILE* file )
 {
-    ASSERT( tree != NULL, 0 );
+    ASSERT( node != NULL, 0 );
     ASSERT( file != NULL, 0 );
 
     fprintf( file, "$$ " );
     
-    PrintLatexFormulaRecursively( &tree->headNode, file );
+    PrintLatexFormulaRecursively( node, file );
 
     fprintf( file, " $$" );
 
@@ -267,34 +268,88 @@ int PrintDiffNodeValue( char* str, Node* node )
 
 //-----------------------------------------------------------------------------
 
-Node* DiffNode(Node* node)
+Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right )
+{    
+    Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
+
+    newNode->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
+    
+    newNode->value->type     = type;
+    newNode->value->dblValue = dbl;
+    newNode->value->opValue  = op;
+    newNode->value->varValue = var;
+
+    newNode->left  = left;
+    newNode->right = right;
+
+    return newNode;
+}
+
+//-----------------------------------------------------------------------------
+
+Node* CopyNode( Node* node )
 {
     ASSERT( node != NULL, 0 );
 
-    /*
-    switch (node->type)
+    Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
+
+    memcpy( newNode,        node,        sizeof(     Node ) );
+    memcpy( newNode->value, node->value, sizeof( DiffNode ) );
+
+    if( node->left )
+    {
+        newNode->left  = CopyNode( node->left );
+    }
+
+    if( node->right )
+    {
+        newNode->right = CopyNode( node->right );
+    }
+
+    return newNode;
+}
+
+//-----------------------------------------------------------------------------
+
+Node* DifferentiateNode( Node* node )
+{
+    ASSERT( node        != NULL, 0 );
+    ASSERT( node->value != NULL, 0 );
+
+    switch( node->value->type )
     {
         case VAL_TYPE:
-            return CREATENUM(0);
+            return CREATE_NUM_NODE( 0 );
 
         case VAR_TYPE:
-            if( *(node->varvalue) == 'x' ) return CREATENUM(1);
-            else                           return CREATENUM(0);
+            if( *(node->value->varValue) == 'x' ) 
+            {
+                return CREATE_NUM_NODE( 1 );
+            }
+            else
+            {
+                return CREATE_NUM_NODE( 0 );
+            }
 
-        /*
         case OP_TYPE:
-            switch (node->optype)
+            switch( node->value->opValue )
             {
                 case OP_ADD:
-                    return ADD(DL, DR);
+                    return ADD( DL, DR );
+
                 case OP_SUB:
-                    return SUB(DL, DR);
+                    return SUB( DL, DR );
+                    
                 case OP_MUL:
-                    return ADD(MUL(DL, CR), MUL(CL, DR));
+                    return ADD(  MUL( DL, CR ), MUL( CL, DR )  );
+
                 case OP_DIV:
-                    return DIV(SUB(MUL(DL, CR), MUL(CL, DR)), POWER(CR, CREATENUM(2)));
+                    return DIV(  SUB( MUL( DL, CR ), MUL( CL, DR ) ), MUL( CR, CR )  );
+
+                /*
                 case OP_SIN:
                     return MUL(COS(NULL, CR), DR);
+
                 case OP_COS:
                     return MUL(MUL(SIN(NULL, CR), CREATENUM(-1)), DR);
                 case OP_POWER:
@@ -325,15 +380,20 @@ Node* DiffNode(Node* node)
                     return node;
                 default:
                     return node;
+            */
             }
-        case UNKNOWN_TYPE:
-            break;
         default:
             break;
     }
-    */
 
     return node;
+}
+
+Node* Differentiate( Node* node )
+{
+    ASSERT( node != NULL, 0 );
+
+    return DifferentiateNode( node );
 }
 
 //-----------------------------------------------------------------------------
@@ -408,15 +468,15 @@ FILE* DiffCreateDotDumpFile( Node* node, const char* fileName )
 
 //-----------------------------------------------------------------------------
 
-int DiffGraphDump( Tree* tree )
+int DiffGraphDump( Node* node )
 {
-    ASSERT( tree != NULL, 0 );
+    ASSERT( node != NULL, 0 );
 
     fclose( FileDiffDump );
     FileDiffDump = fopen( FileDiffDumpName, "w" );
 
     const char* tempDotFileName = "tempGraphVizTree.dot"; 
-    FILE*       tempDotFile = DiffCreateDotDumpFile( &tree->headNode, tempDotFileName );
+    FILE*       tempDotFile = DiffCreateDotDumpFile( node, tempDotFileName );
     fclose(     tempDotFile     );
 
     char graphName[MaxStrLen] = "img/graph.png";

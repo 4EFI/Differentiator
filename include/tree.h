@@ -30,18 +30,6 @@ struct Node
 int NodeCtor( Node* node );
 int NodeDtor( Node* node );
 
-//-----------------------------------------------------------------------------
-
-struct Tree
-{
-    Node headNode;
-
-    bool isEmpty;
-};
-
-int TreeCtor( Tree* tree );
-int TreeDtor( Tree* tree );
-
 Node* TreeSetNodeValue( Node* node, TreeElem_t val );
 Node* TreeAddChild    ( Node* node, TreeElem_t val, int side );
 

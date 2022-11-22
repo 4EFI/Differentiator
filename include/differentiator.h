@@ -62,7 +62,7 @@ static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int );
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffData( Tree* tree, const char* diffData );
+int LoadDiffData( Node* node, const char* diffData );
 
 int IsUnaryOperation( int  numOp, 
                       int* unaryOperations    = UnaryOperations,
@@ -83,14 +83,19 @@ int PrintOperation( char*      str,
 
 int PrintDiffNodeValue( char* str, Node* node );
 
-int PrintLatexFormula( Tree* tree, FILE* file );     
+int PrintLatexFormula( Node* node, FILE* file );  
+
+Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right );
+Node* CopyNode( Node* node );
+
+Node* Differentiate( Node* node );
 
 // DiffDump 
 // {
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum ); 
 
 FILE* DiffCreateDotDumpFile( Node* node, const char* fileName );
-int   DiffGraphDump( Tree* tree );
+int   DiffGraphDump( Node* node );
 // } 
 
 //-----------------------------------------------------------------------------

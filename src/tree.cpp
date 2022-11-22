@@ -50,30 +50,6 @@ int NodeDtor( Node* node )
 //  Tree functions
 //-----------------------------------------------------------------------------
 
-int TreeCtor( Tree* tree )
-{
-    ASSERT( tree != NULL, 0 );
-
-    tree->isEmpty = true;
-
-    NodeCtor( &tree->headNode );
-
-    return 1;
-}
-
-//-----------------------------------------------------------------------------
-
-int TreeDtor( Tree* tree )
-{
-    ASSERT( tree != NULL, 0 );
-    
-    // soon
-
-    return 1;
-}
-
-//-----------------------------------------------------------------------------
-
 Node* TreeSetNodeValue( Node* node, TreeElem_t val )
 {
     ASSERT( node != NULL, NULL );
