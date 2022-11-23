@@ -26,19 +26,24 @@ int main()
     LoadDiffData( &diffTree, diffData );
     fclose( file );
 
+    PrintLatexFormula( &diffTree, stdout );
+    DiffGraphDump    ( &diffTree, "Original" );
+    
+    printf( "\n" );
+
     Node* newNode = Differentiate( &diffTree );
 
-    PrintLatexFormula( &diffTree, stdout );
+    PrintLatexFormula( newNode,  stdout );
+    DiffGraphDump    ( newNode, "Differentiate" );
+
     printf( "\n" );
-    PrintLatexFormula(  newNode,  stdout );
 
-    newNode->left->left = GetSimplifiedConstantNode( newNode->left->left );
+    SimplifyConstant ( newNode );
+    PrintLatexFormula( newNode,  stdout );
+    DiffGraphDump    ( newNode, "Simplify" );
 
-    PrintLatexFormula(  newNode,  stdout );
 
-    DiffGraphDump( newNode );
-
-    free(  diffData );
+    free( diffData );
 }
 
 //-----------------------------------------------------------------------------

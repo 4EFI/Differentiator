@@ -85,19 +85,23 @@ int PrintDiffNodeValue( char* str, Node* node );
 
 int PrintLatexFormula( Node* node, FILE* file );  
 
-Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL );
+Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* node = NULL );
 Node* CopyNode( Node* node );
+
+int LinkNodeParents( Node* node, Node* parent );
 
 Node* Differentiate( Node* node );
 
 Node* GetSimplifiedConstantNode( Node* node ); 
+
+int SimplifyConstant( Node* node );
 
 // DiffDump 
 // {
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum ); 
 
 FILE* DiffCreateDotDumpFile( Node* node, const char* fileName );
-int   DiffGraphDump( Node* node );
+int   DiffGraphDump        ( Node* node, const char* str = NULL, ... );
 // } 
 
 //-----------------------------------------------------------------------------

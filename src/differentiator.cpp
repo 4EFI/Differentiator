@@ -269,7 +269,7 @@ int PrintDiffNodeValue( char* str, Node* node )
 
 //-----------------------------------------------------------------------------
 
-Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right )
+Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right, Node* node )
 {    
     Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
 
@@ -279,8 +279,9 @@ Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* rig
     newNode->value->opValue  = op;
     newNode->value->varValue = var;
 
-    newNode->left  = left;
-    newNode->right = right;
+    newNode->parent = node;
+    newNode->left   = left;
+    newNode->right  = right;
 
     return newNode;
 }
@@ -391,11 +392,34 @@ Node* DifferentiateNode( Node* node )
     return node;
 }
 
+int LinkNodeParents( Node* node, Node* parent )
+{
+    ASSERT( node != NULL, 0 );
+
+    node->parent = parent;
+
+    if( node->left )
+    {
+        LinkNodeParents( node->left, node );
+    }
+    
+    if( node->right )
+    {
+        LinkNodeParents( node->right, node );
+    }
+
+    return 1; 
+}
+
 Node* Differentiate( Node* node )
 {
     ASSERT( node != NULL, 0 );
 
-    return DifferentiateNode( node );
+    Node* newNode = DifferentiateNode( node );
+
+    LinkNodeParents( newNode, NULL );
+
+    return newNode;
 }
 
 //-----------------------------------------------------------------------------
@@ -442,7 +466,23 @@ int SimplifyConstant( Node* node )
 {
     ASSERT( node != NULL, 0 );
 
+    Node* newNode = GetSimplifiedConstantNode( node );
+    
+    if( node->left )
+    {
+        SimplifyConstant( node->left );
+    }
 
+    if( node->right )
+    {
+        SimplifyConstant( node->right );
+    }
+
+    if( newNode )
+    {        
+        if/* */( IS_L ) node->parent->left  = newNode;
+        else if( IS_R ) node->parent->right = newNode;
+    }
 
     return 1;
 }
@@ -477,7 +517,7 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
 
     if/* */( typeNum == Types::OP_TYPE  ) { typeStr = "op"  ; color = "lightgrey"  ; }
     else if( typeNum == Types::VAL_TYPE ) { typeStr = "val" ; color = "lightgreen" ; }
-    else if( typeNum == Types::VAR_TYPE ) { typeStr = "var" ; color = "lightgreen" ; }
+    else if( typeNum == Types::VAR_TYPE ) { typeStr = "var" ; color = "lightblue" ; }
 
     char valueStr[ MaxStrLen ] = "";
     PrintDiffNodeValue( valueStr, node );
@@ -519,30 +559,46 @@ FILE* DiffCreateDotDumpFile( Node* node, const char* fileName )
 
 //-----------------------------------------------------------------------------
 
-int DiffGraphDump( Node* node )
+int DiffGraphDump( Node* node, const char* str, ... )
 {
     ASSERT( node != NULL, 0 );
-
-    fclose( FileDiffDump );
-    FileDiffDump = fopen( FileDiffDumpName, "w" );
 
     const char* tempDotFileName = "tempGraphVizTree.dot"; 
     FILE*       tempDotFile = DiffCreateDotDumpFile( node, tempDotFileName );
     fclose(     tempDotFile     );
 
-    char graphName[MaxStrLen] = "img/graph.png";
+    static int dumpNum = 0;
+
+    char     graphName[MaxStrLen] = "";
+    sprintf( graphName, "img/graph%d.png", dumpNum++ );
 
     CreateGraphVizImg( tempDotFileName, graphName, "png" );
 
     // Delete temp file
     remove( tempDotFileName );
 
+    // Create html
+    fclose( FileDiffDump );
+    FileDiffDump = fopen( FileDiffDumpName, "a+" );
+
+    va_list   arg = {0};
+    va_start( arg, str );
+
     // Create html file
     fprintf( FileDiffDump, "<pre>" );
+    fprintf( FileDiffDump, "<font size = 4>" );
+   vfprintf( FileDiffDump, str, arg );
+    fprintf( FileDiffDump, "</font>" );
+
+    if( str ) 
+    {
+        fprintf( FileDiffDump, "\n\n" );
+    }
 
     fprintf( FileDiffDump, "<img src = \"%s\", style = \" max-width: 95vw \">", graphName );
     fprintf( FileDiffDump, "<hr>" );
 
+    va_end( arg );
     fclose( FileDiffDump );
 
     return 1;
