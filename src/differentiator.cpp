@@ -424,6 +424,10 @@ Node* Differentiate( Node* node )
 
 //-----------------------------------------------------------------------------
 
+
+// Simplify
+//-----------------------------------------------------------------------------
+
 Node* GetSimplifiedConstantNode( Node* node )
 {
     ASSERT( node != NULL, 0 );
@@ -439,16 +443,16 @@ Node* GetSimplifiedConstantNode( Node* node )
             switch( opNum )
             {
                 case OP_ADD:
-                    return CREATE_VAL_NODE( COUNT( + ) );
+                    return CREATE_VAL_NODE( L_VAL + R_VAL );
 
                 case OP_SUB:
-                    return CREATE_VAL_NODE( COUNT( - ) );
+                    return CREATE_VAL_NODE( L_VAL - R_VAL );
 
                 case OP_MUL:
-                    return CREATE_VAL_NODE( COUNT( * ) );
+                    return CREATE_VAL_NODE( L_VAL * R_VAL );
 
                 case OP_DIV:
-                    return CREATE_VAL_NODE( COUNT( / ) );
+                    return CREATE_VAL_NODE( L_VAL / R_VAL );
 
                 case OP_DEG:
                     return CREATE_VAL_NODE( pow( L_VAL, R_VAL ) );
@@ -462,27 +466,149 @@ Node* GetSimplifiedConstantNode( Node* node )
     return NULL;
 }
 
-int SimplifyConstant( Node* node )
+int SimplifyConstantsRecursively( Node* node, int* isWasSimpled )
 {
     ASSERT( node != NULL, 0 );
-
-    Node* newNode = GetSimplifiedConstantNode( node );
     
     if( node->left )
     {
-        SimplifyConstant( node->left );
+        SimplifyConstantsRecursively( node->left, isWasSimpled );
     }
 
     if( node->right )
     {
-        SimplifyConstant( node->right );
+        SimplifyConstantsRecursively( node->right, isWasSimpled );
+    }
+
+    Node* newNode = GetSimplifiedConstantNode( node );
+
+    if( newNode )
+    {            
+        if/* */( IS_L ) node->parent->left  = newNode;
+        else if( IS_R ) node->parent->right = newNode;
+
+        if( node->parent == 0 ) memcpy( node, newNode, sizeof( Node ) );
+
+        (*isWasSimpled) = true;
+    }
+
+    return 1;
+}
+
+int SimplifyConstants( Node* node )
+{
+    ASSERT( node != NULL, -1 );
+
+    int isWasSimpled = false;
+
+    SimplifyConstantsRecursively( node, &isWasSimpled );
+
+    return isWasSimpled;
+}
+
+Node* GetSimplifiedNeutralNode( Node* node )
+{
+    ASSERT( node != NULL, NULL );
+
+    if( node->value == NULL ) return NULL; 
+
+    if( IS_OP )
+    {
+        int op = node->value->opValue;
+        
+        switch( op )
+        {
+            case OP_ADD:
+                // x + 0
+                if( IS_L_VAR && IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
+                {
+                    return CREATE_VAR_NODE( L_VAR );
+                }
+                // 0 + x
+                if( IS_R_VAR && IS_L_VAL && CompareDoubles( L_VAL, 0 ) )
+                {
+                    return CREATE_VAR_NODE( R_VAR );
+                }
+                break;
+
+            case OP_SUB:
+                // x - 0
+                if( IS_L_VAR && IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
+                {
+                    return CREATE_VAR_NODE( L_VAR );
+                }
+                break;
+
+            case OP_MUL:
+                // x * 0 || 0 * x
+                if( ( IS_R_VAL && CompareDoubles( R_VAL, 0 ) ) || 
+                    ( IS_L_VAL && CompareDoubles( L_VAL, 0 ) ) )
+                {
+                    return CREATE_VAL_NODE( 0 );
+                }
+                break;
+        
+            case OP_DIV:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return NULL;
+}
+
+int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
+{
+    ASSERT( node != NULL, 0 );
+
+    Node* newNode = GetSimplifiedNeutralNode( node );
+    
+    if( node->left )
+    {
+        SimplifyNeutralsRecursively( node->left, isWasSimpled );
+    }
+
+    if( node->right )
+    {
+        SimplifyNeutralsRecursively( node->right, isWasSimpled );
     }
 
     if( newNode )
     {        
         if/* */( IS_L ) node->parent->left  = newNode;
         else if( IS_R ) node->parent->right = newNode;
+
+        if( node->parent == 0 ) memcpy( node, newNode, sizeof( Node ) );
+
+        (*isWasSimpled) = true;
     }
+
+    return 1;
+}
+
+int SimplifyNeutrals( Node* node )
+{
+    ASSERT( node != NULL, -1 );
+
+    int isWasSimpled = false;
+
+    SimplifyNeutralsRecursively( node, &isWasSimpled );
+
+    return isWasSimpled;
+}
+
+int Simplify( Node* node )
+{
+    ASSERT( node != NULL, 0 );
+
+    int isWasSimpled = 0;
+
+    isWasSimpled += SimplifyConstants( node );
+    isWasSimpled += SimplifyNeutrals ( node );
+
+    if( isWasSimpled ) Simplify( node ); 
 
     return 1;
 }
@@ -517,7 +643,7 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
 
     if/* */( typeNum == Types::OP_TYPE  ) { typeStr = "op"  ; color = "lightgrey"  ; }
     else if( typeNum == Types::VAL_TYPE ) { typeStr = "val" ; color = "lightgreen" ; }
-    else if( typeNum == Types::VAR_TYPE ) { typeStr = "var" ; color = "lightblue" ; }
+    else if( typeNum == Types::VAR_TYPE ) { typeStr = "var" ; color = "lightblue"  ; }
 
     char valueStr[ MaxStrLen ] = "";
     PrintDiffNodeValue( valueStr, node );

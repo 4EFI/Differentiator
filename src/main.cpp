@@ -38,10 +38,9 @@ int main()
 
     printf( "\n" );
 
-    SimplifyConstant ( newNode );
+    Simplify         ( newNode );
     PrintLatexFormula( newNode,  stdout );
-    DiffGraphDump    ( newNode, "Simplify" );
-
+    DiffGraphDump    ( newNode, "Simplify" ); 
 
     free( diffData );
 }

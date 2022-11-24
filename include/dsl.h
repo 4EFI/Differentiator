@@ -9,18 +9,25 @@
 #define IS_R node->parent && node->parent->right == node
 #define IS_L node->parent && node->parent->left  == node
 
+#define IS_OP node->value->type == Types::OP_TYPE ? 1 : 0
+
 // Right/Left node type
 #define IS_R_VAL IS_R_EXISTS && node->right->value->type == Types::VAL_TYPE ? 1 : 0
 #define IS_L_VAL IS_L_EXISTS && node->left ->value->type == Types::VAL_TYPE ? 1 : 0
+
+#define IS_R_VAR IS_R_EXISTS && node->right->value->type == Types::VAR_TYPE ? 1 : 0
+#define IS_L_VAR IS_L_EXISTS && node->left ->value->type == Types::VAR_TYPE ? 1 : 0
 
 #define IS_R_OP IS_R_EXISTS && node->right->value->type == Types::OP_TYPE ? 1 : 0
 #define IS_L_OP IS_L_EXISTS && node->left ->value->type == Types::OP_TYPE ? 1 : 0
 
 // Right/left node dblValue
 #define R_VAL node->right->value->dblValue
-#define L_VAL node->left ->value->dblValue
+#define L_VAL node->left ->value->dblValue 
 
-#define COUNT( OP ) L_VAL OP R_VAL 
+// Right/left node varValue
+#define R_VAR node->right->value->varValue
+#define L_VAR node->left ->value->varValue 
 
 #define CREATE_VAL_NODE( NUM ) CreateNode( VAL_TYPE, NUM, -1, NULL, NULL, NULL ) 
 #define CREATE_VAR_NODE( VAR ) CreateNode( VAR_TYPE, 0,   -1, #VAR, NULL, NULL )
@@ -50,8 +57,5 @@
 #define LN(L,R) CreateNode(OP_TYPE, 0, OP_LN, NULL, L, R)
 #define CH(L,R) CreateNode(OP_TYPE, 0, OP_CH, NULL, L, R)
 #define SH(L, R) CreateNode(OP_TYPE, 0, OP_SH, NULL, L, R)
-#define IS_OP(oper) (node->type == OP_TYPE) && (node->optype == oper)
-#define IS_LVAL(value) (node->leftchild->type == NUM_TYPE) && (compare(node->leftchild->val, value) == 0)
-#define IS_RVAL(value) (node->rightchild->type == NUM_TYPE) && (compare(node->rightchild->val, value) == 0)
 
 #endif

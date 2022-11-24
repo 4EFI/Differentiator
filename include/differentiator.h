@@ -93,8 +93,12 @@ int LinkNodeParents( Node* node, Node* parent );
 Node* Differentiate( Node* node );
 
 Node* GetSimplifiedConstantNode( Node* node ); 
+Node* GetSimplifiedNeutralNode ( Node* node );
 
-int SimplifyConstant( Node* node );
+int SimplifyConstants( Node* node );
+int SimplifyNeutrals ( Node* node );
+
+int Simplify( Node* node );
 
 // DiffDump 
 // {
