@@ -541,14 +541,29 @@ Node* GetSimplifiedNeutralNode( Node* node )
 
             case OP_MUL:
                 // x * 0 || 0 * x
-                if( ( IS_R_VAL && CompareDoubles( R_VAL, 0 ) ) || 
-                    ( IS_L_VAL && CompareDoubles( L_VAL, 0 ) ) )
-                {
+                if( ( IS_L_VAL && CompareDoubles( L_VAL, 0 ) ) || 
+                    ( IS_R_VAL && CompareDoubles( R_VAL, 0 ) ) )
+                {    
                     return CREATE_VAL_NODE( 0 );
+                }
+                // x * 1 
+                if( IS_R_VAL && CompareDoubles( R_VAL, 1 ) )
+                {
+                    return node->left;
+                }
+                // 1 * x
+                if( IS_L_VAL && CompareDoubles( L_VAL, 1 ) )
+                {
+                    return node->right;
                 }
                 break;
         
             case OP_DIV:
+                // x / 1
+                if( IS_R_VAL && CompareDoubles( R_VAL, 1 ) )
+                {
+                    return node->left;
+                } 
                 break;
 
             default:
@@ -562,8 +577,6 @@ Node* GetSimplifiedNeutralNode( Node* node )
 int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
 {
     ASSERT( node != NULL, 0 );
-
-    Node* newNode = GetSimplifiedNeutralNode( node );
     
     if( node->left )
     {
@@ -574,6 +587,8 @@ int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
     {
         SimplifyNeutralsRecursively( node->right, isWasSimpled );
     }
+
+    Node* newNode = GetSimplifiedNeutralNode( node );
 
     if( newNode )
     {        
