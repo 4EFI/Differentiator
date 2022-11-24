@@ -185,12 +185,15 @@ int GetIndexOperation( int numOp, Operation* operations, int numOperations )
 
 int PrintLatexFormulaRecursively( Node* node, FILE* file ) 
 {
-    ASSERT( node        != NULL, 0 );
-    ASSERT( file        != NULL, 0 );
+    ASSERT( node != NULL, 0 );
+    ASSERT( file != NULL, 0 );
 
     if( node->value == NULL ) return 0; 
 
-    fprintf( file, "( " );
+    if( node->left && node->right && node->parent != NULL )
+    {
+        fprintf( file, "( " );  
+    }
     PrintTex( Begin );
 
     if( node->left )  
@@ -216,7 +219,10 @@ int PrintLatexFormulaRecursively( Node* node, FILE* file )
     }
 
     PrintTex( End );
-    fprintf( file, " )" );
+    if( node->left && node->right && node->parent != NULL )
+    {
+        fprintf( file, " )" );  
+    }
 
     return 1;
 }
@@ -286,8 +292,6 @@ Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* rig
     return newNode;
 }
 
-//-----------------------------------------------------------------------------
-
 Node* CopyNode( Node* node )
 {
     ASSERT( node != NULL, 0 );
@@ -312,6 +316,10 @@ Node* CopyNode( Node* node )
     return newNode;
 }
 
+//-----------------------------------------------------------------------------
+
+
+// Differentiate
 //-----------------------------------------------------------------------------
 
 Node* DifferentiateNode( Node* node )
@@ -349,9 +357,8 @@ Node* DifferentiateNode( Node* node )
                 case OP_DIV:
                     return DIV(  SUB( MUL( DL, CR ), MUL( CL, DR ) ), MUL( CR, CR )  );
 
-                /*
                 case OP_SIN:
-                    return MUL(COS(NULL, CR), DR);
+                    return MUL(  COS( NULL, CR ), DR  );
 
                 case OP_COS:
                     return MUL(MUL(SIN(NULL, CR), CREATENUM(-1)), DR);

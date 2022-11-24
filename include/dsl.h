@@ -50,12 +50,11 @@
 #define DIV( L, R ) CREATE_OP_NODE( OP_DIV, L, R )
 // sin
 #define SIN( L, R ) CREATE_OP_NODE( OP_SIN, L, R )
-
-#define COS(L, R) CreateNode(OP_TYPE, 0, OP_COS, NULL, L, R)
+// cos
+#define COS( L, R ) CREATE_OP_NODE( OP_COS, L, R )
+// sqrt
 #define SQRT(L, R) CreateNode(OP_TYPE, 0, OP_SQRT, NULL, L, R)
 #define POWER(L, R) CreateNode(OP_TYPE, 0, OP_POWER, NULL, L, R)
 #define LN(L,R) CreateNode(OP_TYPE, 0, OP_LN, NULL, L, R)
-#define CH(L,R) CreateNode(OP_TYPE, 0, OP_CH, NULL, L, R)
-#define SH(L, R) CreateNode(OP_TYPE, 0, OP_SH, NULL, L, R)
 
 #endif
