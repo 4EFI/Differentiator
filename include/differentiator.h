@@ -94,9 +94,9 @@ int PrintOperation( char*      str,
 
 int PrintDiffNodeValue( char* str, Node* node );
 
-int PrintFormula( Node* node, FILE* file, int formulaType = FormulaType::COMMON );
+int PrintFormula( Node* node, FILE* file = stdout, int formulaType = FormulaType::COMMON );
 
-Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* node = NULL );
+Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* parent = NULL );
 Node* CopyNode( Node* node );
 
 int LinkNodeParents( Node* node, Node* parent );
@@ -111,7 +111,7 @@ int SimplifyNeutrals ( Node* node );
 
 int Simplify( Node* node );
 
-double CalcValueAtPoint( Node* node, const char* varName, double val );
+Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* answer = NULL );
 
 // Latex
 int CreateTexFile   ( const char* texFileName, Node* node );

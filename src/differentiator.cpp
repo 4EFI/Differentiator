@@ -273,7 +273,7 @@ int PrintDiffNodeValue( char* str, Node* node )
 
 //-----------------------------------------------------------------------------
 
-Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right, Node* node )
+Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* right, Node* parent )
 {    
     Node* newNode = ( Node* )calloc( 1, sizeof( Node ) );
 
@@ -283,7 +283,7 @@ Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* rig
     newNode->value->opValue  = op;
     newNode->value->varValue = var;
 
-    newNode->parent = node;
+    newNode->parent = parent;
     newNode->left   = left;
     newNode->right  = right;
 
@@ -303,12 +303,14 @@ Node* CopyNode( Node* node )
 
     if( node->left )
     {
-        newNode->left  = CopyNode( node->left );
+        newNode->left = CopyNode( node->left );
+        newNode->left->parent = newNode; 
     }
 
     if( node->right )
     {
         newNode->right = CopyNode( node->right );
+        newNode->right->parent = newNode; 
     }
 
     return newNode;
@@ -424,7 +426,7 @@ Node* Differentiate( Node* node, const char* varName )
 
     Node* newNode = DifferentiateNode( node, varName );
     
-    LinkNodeParents( node, NULL );
+    LinkNodeParents( newNode, NULL );
 
     return newNode;
 }
@@ -442,8 +444,6 @@ Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
     if( node->value == NULL || !IS_OP ) return NULL; 
 
     double l_val = 0, r_val = 0;
-
-    if( IS_L_VAR && varName ) LOG( "%s %s %d %f", L_VAR, varName, strcmp( L_VAR, varName ), R_VAL );
 
     if/* */( IS_L_VAL )                                         l_val = L_VAL;
     else if( IS_L_VAR && varName && !strcmp( L_VAR, varName ) ) l_val = val;
@@ -494,11 +494,7 @@ int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* var
     Node* newNode = GetSimplifiedConstantNode( node, varName, val );
 
     if( newNode )
-    {            
-        LOG( "%d", node->parent );
-        
-        if( node->parent ) LOG( "%d %d", node->parent->right, node );
-
+    {                
         newNode->parent = node->parent;
         
         if/* */( IS_L ) { node->parent->left  = newNode; }
@@ -653,10 +649,10 @@ int Simplify( Node* node )
 // Calculate value at point
 //-----------------------------------------------------------------------------
 
-double CalcValueAtPoint( Node* node, const char* varName, double val )
+Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* answer )
 {
-    ASSERT( node    != NULL, POISON_DBL );
-    ASSERT( varName != NULL, POISON_DBL );
+    ASSERT( node    != NULL, NULL );
+    ASSERT( varName != NULL, NULL );
 
     Node* newNode = CopyNode( node );
 
@@ -664,9 +660,16 @@ double CalcValueAtPoint( Node* node, const char* varName, double val )
 
     DiffGraphDump( newNode ); 
 
-    if( !newNode->left && !newNode->right ) return newNode->value->dblValue;
+    if( !newNode->left && !newNode->right && answer ) 
+    {
+        (*answer) = newNode->value->dblValue;
+    }
+    else if( answer )
+    {
+        (*answer) = POISON_DBL;
+    }
 
-    return POISON_DBL;
+    return newNode;
 }  
 
 //-----------------------------------------------------------------------------

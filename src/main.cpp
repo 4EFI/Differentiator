@@ -41,7 +41,8 @@ int main()
 
     printf( "\n" );
 
-    double ans = CalcValueAtPoint( newNode, "a", 2 ); 
+    double ans = 0;
+    PrintFormula( CalcValueAtPoint( newNode, "a", 2, &ans ) );
 
     LOG( "%lf", ans );
 
