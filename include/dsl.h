@@ -9,7 +9,9 @@
 #define IS_R ( node->parent && node->parent->right == node )
 #define IS_L ( node->parent && node->parent->left  == node )
 
-#define IS_OP ( node->value->type == Types::OP_TYPE ? 1 : 0 )
+#define IS_OP  ( node->value->type == Types::OP_TYPE  ? 1 : 0 )
+#define IS_VAL ( node->value->type == Types::VAL_TYPE ? 1 : 0 )
+#define IS_VAR ( node->value->type == Types::VAR_TYPE ? 1 : 0 )
 
 // Right/Left node type
 #define IS_R_VAL ( IS_R_EXISTS && node->right->value->type == Types::VAL_TYPE ? 1 : 0 )
@@ -34,8 +36,8 @@
 
 #define CREATE_OP_NODE( OP, L, R ) CreateNode( OP_TYPE, 0, OP, NULL, L, R )
 
-#define DL DifferentiateNode( node->left  )
-#define DR DifferentiateNode( node->right )
+#define DL DifferentiateNode( node->left,  varName )
+#define DR DifferentiateNode( node->right, varName )
 
 #define CL CopyNode( node->left  )
 #define CR CopyNode( node->right )

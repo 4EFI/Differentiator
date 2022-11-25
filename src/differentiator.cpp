@@ -27,13 +27,11 @@ int SetDiffNode( Node* node, const char* diffData, int* numOp )
 {
     ASSERT( node     != NULL, 0 );
     ASSERT( diffData != NULL, 0 );
-
-    node->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
     
     int numReadSyms = 0;
 
     double num = 0;
-    bool isNum = sscanf( diffData, " %lf%n ", &num, &numReadSyms );
+    int isNum = sscanf( diffData, " %lf%n ", &num, &numReadSyms );
 
     if( isNum )
     {        
@@ -79,7 +77,7 @@ int LoadDiffData( Node* node, const char* diffData )
         
         if ( diffData[i] == '(' )
         {
-            if( !currNode->left )
+            if( !currNode->left && IsUnaryOperation( currOp ) == -1 )
             {
                 currNode = TreeAddChild( currNode, NULL, LEFT_SIDE );
                 continue;
@@ -99,12 +97,9 @@ int LoadDiffData( Node* node, const char* diffData )
 
         i += SetDiffNode( currNode, diffData + i, &currOp );
         i --;
-
-        if( IsUnaryOperation( currOp ) >= 0 )
-        {
-            TreeAddChild( currNode, NULL, LEFT_SIDE );
-        }
     }
+
+    LinkNodeParents( node, NULL );
 
     return 1;
 }
@@ -183,25 +178,26 @@ int GetIndexOperation( int numOp, Operation* operations, int numOperations )
     }                                                               \
 }
 
-int PrintLatexFormulaRecursively( Node* node, FILE* file ) 
+int PrintFormulaRecursively( Node* node, FILE* file, int formulaType ) 
 {
     ASSERT( node != NULL, 0 );
     ASSERT( file != NULL, 0 );
 
-    if( node->value == NULL ) return 0; 
+    int isLatex = ( formulaType == FormulaType::LATEX ? 1 : 0 );
 
     if( node->left && node->right && node->parent != NULL )
     {
         fprintf( file, "( " );  
     }
-    PrintTex( Begin );
+    
+    if( isLatex ) PrintTex( Begin );
 
     if( node->left )  
     {
-        PrintLatexFormulaRecursively( node->left, file );
+        PrintFormulaRecursively( node->left, file, formulaType );
     }
     
-    if( node->value->type != OP_TYPE )
+    if( !isLatex || node->value->type != OP_TYPE )
     {
         char strValue[ MaxStrLen ] = "";
         PrintDiffNodeValue( strValue, node );
@@ -215,10 +211,11 @@ int PrintLatexFormulaRecursively( Node* node, FILE* file )
     
     if( node->right ) 
     {
-        PrintLatexFormulaRecursively( node->right, file );
+        PrintFormulaRecursively( node->right, file, formulaType );
     }
 
-    PrintTex( End );
+    if( isLatex ) PrintTex( End );
+
     if( node->left && node->right && node->parent != NULL )
     {
         fprintf( file, " )" );  
@@ -227,16 +224,17 @@ int PrintLatexFormulaRecursively( Node* node, FILE* file )
     return 1;
 }
 
-int PrintLatexFormula( Node* node, FILE* file )
+int PrintFormula( Node* node, FILE* file, int formulaType )
 {
     ASSERT( node != NULL, 0 );
     ASSERT( file != NULL, 0 );
 
-    fprintf( file, "$$ " );
+    int isLatex = ( formulaType == FormulaType::LATEX ? 1 : 0 ); 
+    if( isLatex ) fprintf( file, "$$ " ); // $$
     
-    PrintLatexFormulaRecursively( node, file );
+    PrintFormulaRecursively( node, file, formulaType );
 
-    fprintf( file, " $$" );
+    if( isLatex ) fprintf( file, " $$" ); // $$
 
     return 1;
 }
@@ -300,8 +298,8 @@ Node* CopyNode( Node* node )
 
     newNode->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
 
-    memcpy( newNode,        node,        sizeof(     Node ) );
-    memcpy( newNode->value, node->value, sizeof( DiffNode ) );
+    memmove( newNode,        node,        sizeof(     Node ) );
+    memmove( newNode->value, node->value, sizeof( DiffNode ) );
 
     if( node->left )
     {
@@ -322,7 +320,7 @@ Node* CopyNode( Node* node )
 // Differentiate
 //-----------------------------------------------------------------------------
 
-Node* DifferentiateNode( Node* node )
+Node* DifferentiateNode( Node* node, const char* varName )
 {
     ASSERT( node        != NULL, 0 );
     ASSERT( node->value != NULL, 0 );
@@ -333,7 +331,7 @@ Node* DifferentiateNode( Node* node )
             return CREATE_VAL_NODE( 0 );
 
         case VAR_TYPE:
-            if( *(node->value->varValue) == 'x' ) 
+            if( strcmp( node->value->varValue, varName) == 0 ) 
             {
                 return CREATE_VAL_NODE( 1 );
             }
@@ -360,8 +358,10 @@ Node* DifferentiateNode( Node* node )
                 case OP_SIN:
                     return MUL(  COS( NULL, CR ), DR  );
 
+                /*
                 case OP_COS:
                     return MUL(MUL(SIN(NULL, CR), CREATENUM(-1)), DR);
+
                 case OP_POWER:
                     return DiffPower(node);
                 case OP_LOG:
@@ -418,13 +418,13 @@ int LinkNodeParents( Node* node, Node* parent )
     return 1; 
 }
 
-Node* Differentiate( Node* node )
+Node* Differentiate( Node* node, const char* varName )
 {
     ASSERT( node != NULL, 0 );
 
-    Node* newNode = DifferentiateNode( node );
-
-    LinkNodeParents( newNode, NULL );
+    Node* newNode = DifferentiateNode( node, varName );
+    
+    LinkNodeParents( node, NULL );
 
     return newNode;
 }
@@ -435,66 +435,76 @@ Node* Differentiate( Node* node )
 // Simplify
 //-----------------------------------------------------------------------------
 
-Node* GetSimplifiedConstantNode( Node* node )
+Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
 {
     ASSERT( node != NULL, 0 );
 
-    if( node->value == NULL ) return NULL; 
+    if( node->value == NULL || !IS_OP ) return NULL; 
 
-    if( IS_R_VAL )
+    double l_val = 0, r_val = 0;
+
+    if( IS_L_VAR && varName ) LOG( "%s %s %d %f", L_VAR, varName, strcmp( L_VAR, varName ), R_VAL );
+
+    if/* */( IS_L_VAL )                                         l_val = L_VAL;
+    else if( IS_L_VAR && varName && !strcmp( L_VAR, varName ) ) l_val = val;
+    else return NULL;
+
+    if/* */( IS_R_VAL )                                         r_val = R_VAL;
+    else if( IS_R_VAR && varName && !strcmp( R_VAR, varName ) ) r_val = val;
+    else return NULL;
+
+    // Simplify 
+    int opNum = node->value->opValue;
+
+    switch( opNum )
     {
-        if( IS_L_VAL )
-        {
-            int opNum = node->value->opValue;
+        case OP_ADD:
+            return CREATE_VAL_NODE( l_val + r_val );
 
-            switch( opNum )
-            {
-                case OP_ADD:
-                    return CREATE_VAL_NODE( L_VAL + R_VAL );
+        case OP_SUB:
+            return CREATE_VAL_NODE( l_val - r_val );
 
-                case OP_SUB:
-                    return CREATE_VAL_NODE( L_VAL - R_VAL );
+        case OP_MUL:
+            return CREATE_VAL_NODE( l_val * r_val );
 
-                case OP_MUL:
-                    return CREATE_VAL_NODE( L_VAL * R_VAL );
+        case OP_DIV:
+            return CREATE_VAL_NODE( l_val / r_val );
 
-                case OP_DIV:
-                    return CREATE_VAL_NODE( L_VAL / R_VAL );
-
-                case OP_DEG:
-                    return CREATE_VAL_NODE( pow( L_VAL, R_VAL ) );
-            
-                default:
-                    return NULL;
-            }            
-        }
+        case OP_DEG:
+            return CREATE_VAL_NODE( pow( l_val, r_val ) );   
     }    
 
     return NULL;
 }
 
-int SimplifyConstantsRecursively( Node* node, int* isWasSimpled )
+int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* varName, double val )
 {
     ASSERT( node != NULL, 0 );
     
     if( node->left )
     {
-        SimplifyConstantsRecursively( node->left, isWasSimpled );
+        SimplifyConstantsRecursively( node->left, isWasSimpled, varName, val );
     }
 
     if( node->right )
     {
-        SimplifyConstantsRecursively( node->right, isWasSimpled );
+        SimplifyConstantsRecursively( node->right, isWasSimpled, varName, val );
     }
 
-    Node* newNode = GetSimplifiedConstantNode( node );
+    Node* newNode = GetSimplifiedConstantNode( node, varName, val );
 
     if( newNode )
     {            
-        if/* */( IS_L ) node->parent->left  = newNode;
-        else if( IS_R ) node->parent->right = newNode;
+        LOG( "%d", node->parent );
+        
+        if( node->parent ) LOG( "%d %d", node->parent->right, node );
 
-        if( node->parent == 0 ) memcpy( node, newNode, sizeof( Node ) );
+        newNode->parent = node->parent;
+        
+        if/* */( IS_L ) { node->parent->left  = newNode; }
+        else if( IS_R ) { node->parent->right = newNode; }
+
+        if( node->parent == NULL ) memmove( node, newNode, sizeof( Node ) );
 
         (*isWasSimpled) = true;
     }
@@ -502,13 +512,13 @@ int SimplifyConstantsRecursively( Node* node, int* isWasSimpled )
     return 1;
 }
 
-int SimplifyConstants( Node* node )
+int SimplifyConstants( Node* node, const char* varName, double val )
 {
     ASSERT( node != NULL, -1 );
 
     int isWasSimpled = false;
 
-    SimplifyConstantsRecursively( node, &isWasSimpled );
+    SimplifyConstantsRecursively( node, &isWasSimpled, varName, val );
 
     return isWasSimpled;
 }
@@ -599,10 +609,12 @@ int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
 
     if( newNode )
     {        
-        if/* */( IS_L ) node->parent->left  = newNode;
-        else if( IS_R ) node->parent->right = newNode;
+        newNode->parent = node->parent;
+        
+        if/* */( IS_L ) { node->parent->left  = newNode; }
+        else if( IS_R ) { node->parent->right = newNode; }
 
-        if( node->parent == 0 ) memcpy( node, newNode, sizeof( Node ) );
+        if( node->parent == 0 ) memmove( node, newNode, sizeof( Node ) );
 
         (*isWasSimpled) = true;
     }
@@ -631,6 +643,95 @@ int Simplify( Node* node )
     isWasSimpled += SimplifyNeutrals ( node );
 
     if( isWasSimpled ) Simplify( node ); 
+
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+
+// Calculate value at point
+//-----------------------------------------------------------------------------
+
+double CalcValueAtPoint( Node* node, const char* varName, double val )
+{
+    ASSERT( node    != NULL, POISON_DBL );
+    ASSERT( varName != NULL, POISON_DBL );
+
+    Node* newNode = CopyNode( node );
+
+    SimplifyConstants( newNode, varName, val );
+
+    DiffGraphDump( newNode ); 
+
+    if( !newNode->left && !newNode->right ) return newNode->value->dblValue;
+
+    return POISON_DBL;
+}  
+
+//-----------------------------------------------------------------------------
+
+
+// Create Latex
+//-----------------------------------------------------------------------------
+
+int CreateTexFile( const char* texFileName, Node* node )
+{
+    ASSERT( texFileName != NULL, 0 );
+    
+    FILE* texFile = fopen( texFileName, "w" );
+
+    { // fprintf BeginTex
+    fprintf( texFile,  
+             "\\documentclass[a4paper, 12pt]{article}\n"
+             "\\usepackage{geometry}\n"
+             "\\geometry{a4paper,\n"
+             "total={170mm,257mm},left=2cm,right=2cm,\n"
+             "top=1cm,bottom=2cm}\n"
+             "\n"
+             "\\usepackage{mathtext}\n"
+             "\\usepackage{amsmath}\n"
+             "\\usepackage[T2A]{fontenc}\n"
+             "\\usepackage[utf8]{inputenc}\n"
+             "\\usepackage[english,russian]{babel}\n"
+             "\\usepackage{graphicx, float}\n"
+             "\\usepackage{tabularx, colortbl}\n"
+             "\\usepackage{caption}\n"
+             "\\captionsetup{labelsep=period}\n"
+             "\n"
+             "\\newcommand{\\parag}[1]{\\paragraph*{#1:}}\n"
+             "\\DeclareSymbolFont{T2Aletters}{T2A}{cmr}{m}{it}\n"
+             "\\newcounter{Points}\n"
+             "\\setcounter{Points}{1}\n"
+             "\\newcommand{\\point}{\\arabic{Points}. \\addtocounter{Points}{1}}\n"
+             "\\newcolumntype{C}{>{\\centering\\arraybackslash}X}\n"
+             "\n"
+             "\\date{\\today}\n"
+             "\\author{ Тот самый Супер Перец с Б01-208 }\n"
+             "\\title{ \\textbf{ Методичка } } \n\n" );  
+    }
+
+    fprintf( texFile, "\n\\begin{document}\n"
+                        "\\maketitle\n\n" );
+    
+    PrintFormula( node, texFile, FormulaType::LATEX );
+
+    fprintf( texFile, "\n\n\\end{document}\n" );
+
+    fclose( texFile );
+    return 1;
+}
+
+int CreatePdfFromTex( const char* texFileName )
+{
+    ASSERT( texFileName != NULL, 0 );
+
+    char cmd[ MaxStrLen ] = "";
+    sprintf( cmd, "latex %s", texFileName ); 
+
+    system(  cmd  );
+
+    // system(  ); delete .log .aux
 
     return 1;
 }
@@ -670,8 +771,8 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum )
     char valueStr[ MaxStrLen ] = "";
     PrintDiffNodeValue( valueStr, node );
     
-    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"%s | %s \" ];\n", 
-                       *nodeNum, color, typeStr, valueStr );                                      
+    fprintf( dotFile, "\tnode%d[ shape = record, style = \"filled\", fillcolor = \"%s\", label = \"{ p: %p | n: %p | { %s | %s } }\" ];\n", 
+                       *nodeNum, color, node->parent, node, typeStr, valueStr );                                      
 
     if( node->left )
     {

@@ -13,7 +13,15 @@
 
 static const char* FileDiffDumpName = "diff_dump.html";
 
+static const double POISON_DBL = 0xBAADF00D32DEAD32;
+
 //-----------------------------------------------------------------------------
+
+enum FormulaType
+{
+    COMMON,
+    LATEX   
+};
 
 enum Types
 {
@@ -29,7 +37,8 @@ enum OperationTypes
     OP_MUL,
     OP_DIV,
     OP_DEG,
-    OP_SIN
+    OP_SIN,
+    OP_COS
 };
 
 struct Operation
@@ -48,14 +57,16 @@ static Operation Operations[] =
     { OP_MUL, "*",   "",          " \\cdot ",  ""   },
     { OP_DIV, "/",   "\\dfrac{ ", " }{ ",      " }" },
     { OP_DEG, "^",   "",          "^{ ",       " }" },
-    { OP_SIN, "sin", "",          "\\sin{ ",   " }" }
+    { OP_SIN, "sin", "",          "\\sin{ ",   " }" },
+    { OP_COS, "cos", "",          "\\cos{ ",   " }" }
 };
 
 static int NumOperations = sizeof( Operations ) / sizeof( Operation );
 
 static int UnaryOperations[] = 
 {
-    OP_SIN
+    OP_SIN,
+    OP_COS
 };
 
 static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int ); 
@@ -83,22 +94,28 @@ int PrintOperation( char*      str,
 
 int PrintDiffNodeValue( char* str, Node* node );
 
-int PrintLatexFormula( Node* node, FILE* file );  
+int PrintFormula( Node* node, FILE* file, int formulaType = FormulaType::COMMON );
 
 Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* node = NULL );
 Node* CopyNode( Node* node );
 
 int LinkNodeParents( Node* node, Node* parent );
 
-Node* Differentiate( Node* node );
+Node* Differentiate( Node* node, const char* varName = "x" );
 
-Node* GetSimplifiedConstantNode( Node* node ); 
+Node* GetSimplifiedConstantNode( Node* node, const char* varName = NULL, double val = 0 ); 
 Node* GetSimplifiedNeutralNode ( Node* node );
 
-int SimplifyConstants( Node* node );
+int SimplifyConstants( Node* node, const char* varName = NULL, double val = 0 );
 int SimplifyNeutrals ( Node* node );
 
 int Simplify( Node* node );
+
+double CalcValueAtPoint( Node* node, const char* varName, double val );
+
+// Latex
+int CreateTexFile   ( const char* texFileName, Node* node );
+int CreatePdfFromTex( const char* texFileName );
 
 // DiffDump 
 // {

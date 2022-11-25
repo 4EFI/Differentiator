@@ -21,9 +21,10 @@ int NodeCtor( Node* node )
 {
     ASSERT( node != NULL, 0 );
 
+    node->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
+
     node->parent = NULL;
 
-    node->value  = NULL;
     node->left   = NULL;
     node->right  = NULL;
 
@@ -68,7 +69,16 @@ Node* TreeAddChild( Node* node, TreeElem_t val, int side )
     Node*     newNode = ( Node* )calloc( 1, sizeof( Node ) );
     NodeCtor( newNode );
 
-    newNode->value  = val;
+    if( !val ) 
+    {
+        newNode->value = ( DiffNode* )calloc( 1, sizeof( DiffNode ) );
+        newNode->value->type = -1;
+    }
+    else
+    {
+        newNode->value = val;
+    }
+
     newNode->parent = node;
     newNode->side   = side;
 

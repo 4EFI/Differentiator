@@ -26,21 +26,28 @@ int main()
     LoadDiffData( &diffTree, diffData );
     fclose( file );
 
-    PrintLatexFormula( &diffTree, stdout );
-    DiffGraphDump    ( &diffTree, "Original" );
+    PrintFormula ( &diffTree, stdout, FormulaType::LATEX );
+    DiffGraphDump( &diffTree, "Original" );
     
     printf( "\n" );
 
-    Node* newNode = Differentiate( &diffTree );
+    Node* newNode = Differentiate( &diffTree, "a" );
 
-    PrintLatexFormula( newNode,  stdout );
-    DiffGraphDump    ( newNode, "Differentiate" );
+    DiffGraphDump( newNode, "Differentiate" ); 
+
+    Simplify     ( newNode );
+    PrintFormula ( newNode,  stdout, FormulaType::LATEX );
+    DiffGraphDump( newNode, "Simplify" ); 
 
     printf( "\n" );
 
-    Simplify         ( newNode );
-    PrintLatexFormula( newNode,  stdout );
-    DiffGraphDump    ( newNode, "Simplify" ); 
+    double ans = CalcValueAtPoint( newNode, "a", 2 ); 
+
+    LOG( "%lf", ans );
+
+    CreateTexFile( "Manual.tex", newNode );
+
+    //CreatePdfFromTex( "Manual.tex" );
 
     free( diffData );
 }

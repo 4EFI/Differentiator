@@ -13,7 +13,7 @@ struct DiffNode
     char*  varValue;
 };
 
-typedef DiffNode TreeElem_t;
+typedef DiffNode* TreeElem_t;
 
 //-----------------------------------------------------------------------------
 
