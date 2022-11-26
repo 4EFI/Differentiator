@@ -54,9 +54,9 @@
 #define SIN( L, R ) CREATE_OP_NODE( OP_SIN, L, R )
 // cos
 #define COS( L, R ) CREATE_OP_NODE( OP_COS, L, R )
-// sqrt
-#define SQRT(L, R) CreateNode(OP_TYPE, 0, OP_SQRT, NULL, L, R)
-#define POWER(L, R) CreateNode(OP_TYPE, 0, OP_POWER, NULL, L, R)
-#define LN(L,R) CreateNode(OP_TYPE, 0, OP_LN, NULL, L, R)
+// ^
+#define POW( L, R ) CREATE_OP_NODE( OP_DEG, L, R )
+// ln
+#define LN(  L, R ) CREATE_OP_NODE( OP_LN,  L, R ) 
 
 #endif

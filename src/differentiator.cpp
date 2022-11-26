@@ -357,48 +357,69 @@ Node* DifferentiateNode( Node* node, const char* varName )
                 case OP_DIV:
                     return DIV(  SUB( MUL( DL, CR ), MUL( CL, DR ) ), MUL( CR, CR )  );
 
+                case OP_DEG:
+                {
+                    int isVarInLeft  = IsVarInTree( node->left,  varName );
+					int isVarInRight = IsVarInTree( node->right, varName );
+					
+					if/* */( isVarInLeft && isVarInRight )
+					{
+						return MUL(  POW( CL, CR ), ADD( MUL( DR, LN( NULL, CR ) ), MUL(CR, MUL( DL, DIV( CREATE_VAL_NODE(1), CL ) ) ) )  ); 
+					}
+					else if( isVarInLeft )
+					{
+						return MUL(  MUL( CR, POW( CL, SUB( CR, CREATE_VAL_NODE(1) ) ) ), DL  );
+					}
+					else if( isVarInRight )
+					{
+						return MUL(  MUL( LN( NULL, CL ), POW( CL, CR ) ), DR  );
+					}
+					else
+                    {
+						return CREATE_VAL_NODE( 1 ); 
+                    }
+
+					break;
+                }
+
                 case OP_SIN:
                     return MUL(  COS( NULL, CR ), DR  );
 
-                /*
                 case OP_COS:
-                    return MUL(MUL(SIN(NULL, CR), CREATENUM(-1)), DR);
+                    return MUL(  MUL( SIN( NULL, CR ), CREATE_VAL_NODE(-1) ), DR  );
 
-                case OP_POWER:
-                    return DiffPower(node);
-                case OP_LOG:
-                    return DiffLog(node);
                 case OP_LN:
-                    return MUL(DIV(CREATENUM(1), CR), DR);
-                case OP_TG:
-                    return MUL(DIV(CREATENUM(1), POWER(COS(NULL, CR), CREATENUM(2))), DR);
-                case OP_CTG:
-                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), POWER(SIN(NULL, CR), CREATENUM(2)))), DR);
-                case OP_SQRT:
-                    return MUL(DIV(CREATENUM(1), MUL(CREATENUM(2), SQRT(NULL, CR))), DR);
-                case OP_ARCSIN:
-                    return MUL(DIV(CREATENUM(1), SQRT(NULL, SUB(CREATENUM(1), POWER(CR, CREATENUM(2))))), DR);
-                case OP_ARCCOS:
-                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), SQRT(NULL, SUB(CREATENUM(1), POWER(CR, CREATENUM(2)))))), DR);
-                case OP_ARCTG:
-                    return MUL(DIV(CREATENUM(1), ADD(CREATENUM(1), POWER(CR, CREATENUM(2)))), DR);
-                case OP_ARCCTG:
-                    return MUL(MUL(CREATENUM(-1), DIV(CREATENUM(1), ADD(CREATENUM(1), POWER(CR, CREATENUM(2))))), DR);
-                case OP_SH:
-                    return MUL(CH(NULL, CR), DR);
-                case OP_CH:
-                    return MUL(SH(NULL, CR), DR);
-                case OP_UNKNOWN:
-                    return node;
+                    return MUL(  DIV( CREATE_VAL_NODE(1), CR ), DR  );
+
                 default:
                     return node;
-            */
             }
         default:
             break;
     }
 
     return node;
+}
+
+int IsVarInTree( Node* node, const char* varName )
+{
+    ASSERT( node    != NULL, 0 );
+    ASSERT( varName != NULL, 0 )
+	
+	if( node->value->type == VAR_TYPE && !strcmp( node->value->varValue, varName ) )
+    {
+		return 1;
+    }
+	if( !node->left && !node->right )
+    {
+		return 0;
+    }
+
+	if( IsVarInTree( node->left,  varName ) ) return 1;
+	
+    if( IsVarInTree( node->right, varName ) ) return 1;
+
+	return 0;
 }
 
 int LinkNodeParents( Node* node, Node* parent )
@@ -478,6 +499,9 @@ Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
 
         case OP_COS:
             return CREATE_VAL_NODE( cos( r_val ) );
+        
+        case OP_LN:
+            return CREATE_VAL_NODE( log( r_val ) );
     }    
 
     return NULL;
@@ -697,11 +721,9 @@ int IncludeImgToTex( const char* imgName, FILE* fileName, double scale )
     return 1;
 }
 
-int CreateTexFile( const char* texFileName, Node* node )
-{
-    ASSERT( texFileName != NULL, 0 );
-    
-    FILE* texFile = fopen( texFileName, "w" );
+int PrintBeginTex( FILE* texFile )
+{  
+    ASSERT( texFile != NULL, 0 );
 
     { // fprintf BeginTex
     fprintf( texFile,  
@@ -719,13 +741,26 @@ int CreateTexFile( const char* texFileName, Node* node )
              "\\title{ \\textbf{ Методичка } } \n\n" );  
     }
 
+    return 1;
+}
+
+int CreateTexFile( const char* texFileName, Node* node )
+{
+    ASSERT( texFileName != NULL, 0 );
+    
+    FILE* texFile = fopen( texFileName, "w" );
+
+    PrintBeginTex( texFile );    
+
     fprintf( texFile, "\n\\begin{document}\n"
                         "\\maketitle\n\n" );
     
     PrintFormula( node, texFile, FormulaType::LATEX );
+
+    fprintf( texFile, "\n" );
     
     const char* graphName = "graph.png";
-    CreateFuncGraphImg( node, graphName, -10, 10 );
+    CreateFuncGraphImg( node, graphName, 0.001, 10 );
 
     IncludeImgToTex( graphName, texFile );
 
@@ -775,7 +810,7 @@ int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMa
                        imgName );
     } 
 
-    for( double x = xMin; x <= xMax; x += 0.01 )
+    for( double x = xMin; x <= xMax; x += 0.0001 )
     {
         double ans = 0;
         CalcValueAtPoint( node, "x", x, &ans );

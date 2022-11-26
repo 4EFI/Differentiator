@@ -38,7 +38,8 @@ enum OperationTypes
     OP_DIV,
     OP_DEG,
     OP_SIN,
-    OP_COS
+    OP_COS,
+    OP_LN
 };
 
 struct Operation
@@ -55,10 +56,11 @@ static Operation Operations[] =
     { OP_ADD, "+",   "",          " + ",       ""   },
     { OP_SUB, "-",   "",          " - ",       ""   },
     { OP_MUL, "*",   "",          " \\cdot ",  ""   },
-    { OP_DIV, "/",   "\\dfrac{ ", " }{ ",      " }" },
+    { OP_DIV, "/",   "\\frac{ ", " }{ ",       " }" },
     { OP_DEG, "^",   "",          "^{ ",       " }" },
     { OP_SIN, "sin", "",          "\\sin{ ",   " }" },
-    { OP_COS, "cos", "",          "\\cos{ ",   " }" }
+    { OP_COS, "cos", "",          "\\cos{ ",   " }" },
+    { OP_LN,  "ln",  "",          "\\ln{ ",    " }" },
 };
 
 static int NumOperations = sizeof( Operations ) / sizeof( Operation );
@@ -66,7 +68,8 @@ static int NumOperations = sizeof( Operations ) / sizeof( Operation );
 static int UnaryOperations[] = 
 {
     OP_SIN,
-    OP_COS
+    OP_COS,
+    OP_LN
 };
 
 static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int ); 
@@ -103,6 +106,8 @@ int LinkNodeParents( Node* node, Node* parent );
 
 Node* Differentiate( Node* node, const char* varName = "x" );
 
+int IsVarInTree( Node* node, const char* varName = "x" );
+
 Node* GetSimplifiedConstantNode( Node* node, const char* varName = NULL, double val = 0 ); 
 Node* GetSimplifiedNeutralNode ( Node* node );
 
@@ -114,9 +119,13 @@ int Simplify( Node* node );
 Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* answer = NULL );
 
 // Latex
+// {
+int PrintBeginTex   ( FILE* texFile );
+
 int IncludeImgToTex ( const char* imgName,     FILE* fileName, double scale = 1 );
 int CreateTexFile   ( const char* texFileName, Node* node );
 int CreatePdfFromTex( const char* texFileName );
+// }
 
 int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMax, const char* varName = "x" );
 
