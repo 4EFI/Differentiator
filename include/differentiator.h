@@ -101,6 +101,8 @@ int PrintFormula( Node* node, FILE* file = stdout, int formulaType = FormulaType
 
 Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* parent = NULL );
 Node* CopyNode( Node* node );
+int   SetNodeParent( Node* node, Node* parent );
+int   ReplaceNode  ( Node* node, Node* newNode );
 
 int LinkNodeParents( Node* node, Node* parent );
 
@@ -128,6 +130,8 @@ int CreatePdfFromTex( const char* texFileName );
 // }
 
 int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMax, const char* varName = "x" );
+
+Node* ExpandIntoTaylorSeries( Node* node, int n, double x_0 = 0 );
 
 uint64_t Factorial( uint64_t num );
 

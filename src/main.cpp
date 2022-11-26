@@ -31,20 +31,21 @@ int main()
     
     printf( "\n" );
 
-    Node* newNode = Differentiate( &diffTree, "x" );
+    Node* newNode  = Differentiate( &diffTree, "x" );
+    Node* newNode2 = Differentiate( newNode,   "x" );
 
     DiffGraphDump( newNode, "Differentiate" ); 
 
-    Simplify     ( newNode );
-    PrintFormula ( newNode,  stdout, FormulaType::LATEX );
-    DiffGraphDump( newNode, "Simplify" ); 
+    Simplify     ( newNode2 );
+    PrintFormula ( newNode2,  stdout, FormulaType::LATEX );
+    DiffGraphDump( newNode2, "Simplify" ); 
 
     printf( "\n" );
 
     double ans = 0;
-    PrintFormula( CalcValueAtPoint( newNode, "x", 2, &ans ) );
+    PrintFormula( CalcValueAtPoint( newNode2, "x", 2, &ans ) );
 
-    CreateTexFile   ( "Manual.tex", newNode );
+    CreateTexFile   ( "Manual.tex", newNode2 );
     CreatePdfFromTex( "Manual.tex" );
 
     free( diffData );

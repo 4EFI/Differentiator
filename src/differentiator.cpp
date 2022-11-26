@@ -228,13 +228,8 @@ int PrintFormula( Node* node, FILE* file, int formulaType )
 {
     ASSERT( node != NULL, 0 );
     ASSERT( file != NULL, 0 );
-
-    int isLatex = ( formulaType == FormulaType::LATEX ? 1 : 0 ); 
-    if( isLatex ) fprintf( file, "$$ " ); // $$
     
     PrintFormulaRecursively( node, file, formulaType );
-
-    if( isLatex ) fprintf( file, " $$" ); // $$
 
     return 1;
 }
@@ -316,6 +311,37 @@ Node* CopyNode( Node* node )
     return newNode;
 }
 
+// One node
+int SetNodeParent( Node* node, Node* parent )
+{
+    if( node == NULL ) return 0;
+
+    node->parent = parent;
+
+    return 1;
+}
+
+// Replace left/right node to newNode from previous 
+int ReplaceNode( Node* node, Node* newNode )
+{
+    ASSERT( node != NULL, 0 );
+
+    newNode->parent = node->parent;
+        
+    if/* */( IS_L ) { node->parent->left  = newNode; }
+    else if( IS_R ) { node->parent->right = newNode; }
+
+    if( node->parent == NULL ) 
+    {
+        memmove( node, newNode, sizeof( Node ) );
+        
+        SetNodeParent( node->left,  node );
+        SetNodeParent( node->right, node );
+    }
+
+    return 1;
+}
+
 //-----------------------------------------------------------------------------
 
 
@@ -355,7 +381,7 @@ Node* DifferentiateNode( Node* node, const char* varName )
                     return ADD(  MUL( DL, CR ), MUL( CL, DR )  );
 
                 case OP_DIV:
-                    return DIV(  SUB( MUL( DL, CR ), MUL( CL, DR ) ), MUL( CR, CR )  );
+                    return DIV(  SUB( MUL( DL, CR ), MUL( CL, DR ) ), POW( CR, CREATE_VAL_NODE(2) )  );
 
                 case OP_DEG:
                 {
@@ -422,6 +448,7 @@ int IsVarInTree( Node* node, const char* varName )
 	return 0;
 }
 
+// All tree
 int LinkNodeParents( Node* node, Node* parent )
 {
     ASSERT( node != NULL, 0 );
@@ -445,8 +472,9 @@ Node* Differentiate( Node* node, const char* varName )
 {
     ASSERT( node != NULL, 0 );
 
-    Node* newNode = DifferentiateNode( node, varName );
-    
+    Node* newNode = node;
+
+    newNode = DifferentiateNode( newNode, varName );
     LinkNodeParents( newNode, NULL );
 
     return newNode;
@@ -525,12 +553,7 @@ int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* var
 
     if( newNode )
     {                
-        newNode->parent = node->parent;
-        
-        if/* */( IS_L ) { node->parent->left  = newNode; }
-        else if( IS_R ) { node->parent->right = newNode; }
-
-        if( node->parent == NULL ) memmove( node, newNode, sizeof( Node ) );
+        ReplaceNode( node, newNode );
 
         (*isWasSimpled) = true;
     }
@@ -563,22 +586,22 @@ Node* GetSimplifiedNeutralNode( Node* node )
         {
             case OP_ADD:
                 // x + 0
-                if( IS_L_VAR && IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
+                if( IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
                 {
-                    return CREATE_VAR_NODE( L_VAR );
+                    return node->left;
                 }
                 // 0 + x
-                if( IS_R_VAR && IS_L_VAL && CompareDoubles( L_VAL, 0 ) )
+                if( IS_L_VAL && CompareDoubles( L_VAL, 0 ) )
                 {
-                    return CREATE_VAR_NODE( R_VAR );
+                    return node->right;
                 }
                 break;
 
             case OP_SUB:
                 // x - 0
-                if( IS_L_VAR && IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
+                if( IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
                 {
-                    return CREATE_VAR_NODE( L_VAR );
+                    return node->left;
                 }
                 break;
 
@@ -610,7 +633,7 @@ Node* GetSimplifiedNeutralNode( Node* node )
                 break;
 
             default:
-                break;
+                return NULL;
         }
     }
 
@@ -623,7 +646,7 @@ int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
     
     if( node->left )
     {
-        SimplifyNeutralsRecursively( node->left, isWasSimpled );
+        SimplifyNeutralsRecursively( node->left,  isWasSimpled );
     }
 
     if( node->right )
@@ -634,13 +657,8 @@ int SimplifyNeutralsRecursively( Node* node, int *isWasSimpled )
     Node* newNode = GetSimplifiedNeutralNode( node );
 
     if( newNode )
-    {        
-        newNode->parent = node->parent;
-        
-        if/* */( IS_L ) { node->parent->left  = newNode; }
-        else if( IS_R ) { node->parent->right = newNode; }
-
-        if( node->parent == 0 ) memmove( node, newNode, sizeof( Node ) );
+    {                
+        ReplaceNode( node, newNode );
 
         (*isWasSimpled) = true;
     }
@@ -663,12 +681,11 @@ int Simplify( Node* node )
 {
     ASSERT( node != NULL, 0 );
 
-    int isWasSimpled = 0;
-
-    isWasSimpled += SimplifyConstants( node );
-    isWasSimpled += SimplifyNeutrals ( node );
-
-    if( isWasSimpled ) Simplify( node ); 
+        SimplifyConstants( node );
+    if( SimplifyNeutrals ( node ) ) 
+    {
+        Simplify( node ); 
+    }
 
     return 1;
 }
@@ -755,14 +772,16 @@ int CreateTexFile( const char* texFileName, Node* node )
     fprintf( texFile, "\n\\begin{document}\n"
                         "\\maketitle\n\n" );
     
-    PrintFormula( node, texFile, FormulaType::LATEX );
+    fprintf( texFile, "$$ " );
+    fprintf( texFile, "f(x) = " ); PrintFormula( node, texFile, FormulaType::LATEX );
+    fprintf( texFile, " $$" );
 
     fprintf( texFile, "\n" );
     
     const char* graphName = "graph.png";
     CreateFuncGraphImg( node, graphName, 0.001, 10 );
 
-    IncludeImgToTex( graphName, texFile );
+    IncludeImgToTex( graphName, texFile, 0.8 );
 
     fprintf( texFile, "\n\n\\end{document}\n" );
 
@@ -834,11 +853,16 @@ int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMa
 // Taylor
 //-----------------------------------------------------------------------------
 
-Node* ExpandIntoTaylorSeries( Node* node, double x_0 )
+Node* ExpandIntoTaylorSeries( Node* node, int n, double x_0 )
 {
     ASSERT( node != NULL, 0 );
 
+    Node* currNode = node;
 
+    for( int i = 0; i < n; i++ )
+    {
+
+    }
 
     return NULL;
 }
