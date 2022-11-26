@@ -31,7 +31,7 @@ int main()
     
     printf( "\n" );
 
-    Node* newNode = Differentiate( &diffTree, "a" );
+    Node* newNode = Differentiate( &diffTree, "x" );
 
     DiffGraphDump( newNode, "Differentiate" ); 
 
@@ -42,13 +42,13 @@ int main()
     printf( "\n" );
 
     double ans = 0;
-    PrintFormula( CalcValueAtPoint( newNode, "a", 2, &ans ) );
-
-    LOG( "%lf", ans );
+    PrintFormula( CalcValueAtPoint( newNode, "x", 2, &ans ) );
 
     CreateTexFile( "Manual.tex", newNode );
 
     //CreatePdfFromTex( "Manual.tex" );
+
+    CreateFuncGraphImg( &diffTree, "graph.png" );
 
     free( diffData );
 }

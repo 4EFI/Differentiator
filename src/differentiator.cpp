@@ -447,7 +447,7 @@ Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
 
     if/* */( IS_L_VAL )                                         l_val = L_VAL;
     else if( IS_L_VAR && varName && !strcmp( L_VAR, varName ) ) l_val = val;
-    else return NULL;
+    else if( !( !IS_L_EXISTS && IS_R_EXISTS ) )                 return NULL;
 
     if/* */( IS_R_VAL )                                         r_val = R_VAL;
     else if( IS_R_VAR && varName && !strcmp( R_VAR, varName ) ) r_val = val;
@@ -472,6 +472,12 @@ Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
 
         case OP_DEG:
             return CREATE_VAL_NODE( pow( l_val, r_val ) );   
+
+        case OP_SIN:
+            return CREATE_VAL_NODE( sin( r_val ) );
+
+        case OP_COS:
+            return CREATE_VAL_NODE( cos( r_val ) );
     }    
 
     return NULL;
@@ -658,8 +664,6 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
 
     SimplifyConstants( newNode, varName, val );
 
-    DiffGraphDump( newNode ); 
-
     if( !newNode->left && !newNode->right && answer ) 
     {
         (*answer) = newNode->value->dblValue;
@@ -736,6 +740,49 @@ int CreatePdfFromTex( const char* texFileName )
 
     // system(  ); delete .log .aux
 
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+
+// Create Function Graph
+//-----------------------------------------------------------------------------
+
+int CreateFuncGraphImg( Node* node, const char* imgName, const char* varName )
+{
+    ASSERT( node != NULL, 0 );
+
+    char     filePlotName[ MaxStrLen ] = "";
+    sprintf( filePlotName, "%s.p", imgName );
+    FILE* filePlot = fopen( filePlotName, "w" );
+
+    { // Graph description 
+    fprintf( filePlot, "set terminal png size 800, 600\n"
+                       "set output \"%s\"\n"
+                       "set xlabel \"X\"\n" 
+                       "set ylabel \"Y\"\n"
+                       "set grid\n"
+                       "plot '-' lt 3 linecolor 1 notitle\n", 
+                       imgName );
+    } 
+
+    for( double x = 0; x <= 20; x += 0.01 )
+    {
+        double ans = 0;
+        CalcValueAtPoint( node, "x", x, &ans );
+
+        fprintf( filePlot, "%f\t %f\n", x, ans );  
+    }
+
+    fprintf( filePlot, "e" );
+    fclose(  filePlot  );
+
+    char     cmd[ MaxStrLen ] = "";
+    sprintf( cmd, ".\\gnuplot\\bin\\gnuplot.exe %s", filePlotName );
+    system(  cmd  );
+
+    //remove( filePlotName );
     return 1;
 }
 

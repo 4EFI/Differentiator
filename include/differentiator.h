@@ -117,6 +117,8 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
 int CreateTexFile   ( const char* texFileName, Node* node );
 int CreatePdfFromTex( const char* texFileName );
 
+int CreateFuncGraphImg( Node* node, const char* imgName, const char* varName = "x" );
+
 // DiffDump 
 // {
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum ); 
