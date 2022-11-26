@@ -682,6 +682,21 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
 // Create Latex
 //-----------------------------------------------------------------------------
 
+int IncludeImgToTex( const char* imgName, FILE* fileName, double scale )
+{
+    ASSERT( imgName  != NULL, 0 );
+    ASSERT( fileName != NULL, 0 );
+
+    fprintf( fileName, "\\begin{figure}[H]\n"
+                       "\t\\centering\n"
+                       "\t\\includegraphics[width=%lf\\linewidth]{\"%s\"}\n"
+                       "\\end{figure}\n",
+                        scale,
+                        imgName );
+
+    return 1;
+}
+
 int CreateTexFile( const char* texFileName, Node* node )
 {
     ASSERT( texFileName != NULL, 0 );
@@ -691,37 +706,28 @@ int CreateTexFile( const char* texFileName, Node* node )
     { // fprintf BeginTex
     fprintf( texFile,  
              "\\documentclass[a4paper, 12pt]{article}\n"
-             "\\usepackage{geometry}\n"
-             "\\geometry{a4paper,\n"
-             "total={170mm,257mm},left=2cm,right=2cm,\n"
-             "top=1cm,bottom=2cm}\n"
              "\n"
-             "\\usepackage{mathtext}\n"
-             "\\usepackage{amsmath}\n"
              "\\usepackage[T2A]{fontenc}\n"
-             "\\usepackage[utf8]{inputenc}\n"
+             "\\usepackage[cp1251]{inputenc}\n"
              "\\usepackage[english,russian]{babel}\n"
-             "\\usepackage{graphicx, float}\n"
-             "\\usepackage{tabularx, colortbl}\n"
-             "\\usepackage{caption}\n"
-             "\\captionsetup{labelsep=period}\n"
              "\n"
-             "\\newcommand{\\parag}[1]{\\paragraph*{#1:}}\n"
-             "\\DeclareSymbolFont{T2Aletters}{T2A}{cmr}{m}{it}\n"
-             "\\newcounter{Points}\n"
-             "\\setcounter{Points}{1}\n"
-             "\\newcommand{\\point}{\\arabic{Points}. \\addtocounter{Points}{1}}\n"
-             "\\newcolumntype{C}{>{\\centering\\arraybackslash}X}\n"
+             "\\usepackage{graphicx, float}\n"
+             "\\usepackage{wrapfig}\n"
              "\n"
              "\\date{\\today}\n"
-             "\\author{ РўРѕС‚ СЃР°РјС‹Р№ РЎСѓРїРµСЂ РџРµСЂРµС† СЃ Р‘01-208 }\n"
-             "\\title{ \\textbf{ РњРµС‚РѕРґРёС‡РєР° } } \n\n" );  
+             "\\author{ Тот самый Супер Перец с Б01-208 }\n"
+             "\\title{ \\textbf{ Методичка } } \n\n" );  
     }
 
     fprintf( texFile, "\n\\begin{document}\n"
                         "\\maketitle\n\n" );
     
     PrintFormula( node, texFile, FormulaType::LATEX );
+    
+    const char* graphName = "graph.png";
+    CreateFuncGraphImg( node, graphName, -10, 10 );
+
+    IncludeImgToTex( graphName, texFile );
 
     fprintf( texFile, "\n\n\\end{document}\n" );
 
@@ -734,9 +740,11 @@ int CreatePdfFromTex( const char* texFileName )
     ASSERT( texFileName != NULL, 0 );
 
     char cmd[ MaxStrLen ] = "";
-    sprintf( cmd, "latex %s", texFileName ); 
+    sprintf( cmd, "pdflatex %s", texFileName ); 
 
     system(  cmd  );
+
+    //char name[ MaxStrLen ] = 
 
     // system(  ); delete .log .aux
 
@@ -749,7 +757,7 @@ int CreatePdfFromTex( const char* texFileName )
 // Create Function Graph
 //-----------------------------------------------------------------------------
 
-int CreateFuncGraphImg( Node* node, const char* imgName, const char* varName )
+int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMax, const char* varName )
 {
     ASSERT( node != NULL, 0 );
 
@@ -767,7 +775,7 @@ int CreateFuncGraphImg( Node* node, const char* imgName, const char* varName )
                        imgName );
     } 
 
-    for( double x = 0; x <= 20; x += 0.01 )
+    for( double x = xMin; x <= xMax; x += 0.01 )
     {
         double ans = 0;
         CalcValueAtPoint( node, "x", x, &ans );
@@ -775,15 +783,36 @@ int CreateFuncGraphImg( Node* node, const char* imgName, const char* varName )
         fprintf( filePlot, "%f\t %f\n", x, ans );  
     }
 
-    fprintf( filePlot, "e" );
     fclose(  filePlot  );
 
     char     cmd[ MaxStrLen ] = "";
     sprintf( cmd, ".\\gnuplot\\bin\\gnuplot.exe %s", filePlotName );
     system(  cmd  );
 
-    //remove( filePlotName );
+    remove( filePlotName );
     return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+
+// Taylor
+//-----------------------------------------------------------------------------
+
+Node* ExpandIntoTaylorSeries( Node* node, double x_0 )
+{
+    ASSERT( node != NULL, 0 );
+
+
+
+    return NULL;
+}
+
+uint64_t Factorial( uint64_t num )
+{
+    if( num <= 1 ) return 1;
+
+    return num * Factorial( num - 1 );
 }
 
 //-----------------------------------------------------------------------------

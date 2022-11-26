@@ -44,11 +44,8 @@ int main()
     double ans = 0;
     PrintFormula( CalcValueAtPoint( newNode, "x", 2, &ans ) );
 
-    CreateTexFile( "Manual.tex", newNode );
-
-    //CreatePdfFromTex( "Manual.tex" );
-
-    CreateFuncGraphImg( &diffTree, "graph.png" );
+    CreateTexFile   ( "Manual.tex", newNode );
+    CreatePdfFromTex( "Manual.tex" );
 
     free( diffData );
 }
