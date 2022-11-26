@@ -311,7 +311,7 @@ Node* CopyNode( Node* node )
     return newNode;
 }
 
-// One node
+// Set only at one node
 int SetNodeParent( Node* node, Node* parent )
 {
     if( node == NULL ) return 0;
@@ -448,7 +448,7 @@ int IsVarInTree( Node* node, const char* varName )
 	return 0;
 }
 
-// All tree
+// All nodes from headNode
 int LinkNodeParents( Node* node, Node* parent )
 {
     ASSERT( node != NULL, 0 );
@@ -761,7 +761,7 @@ int PrintBeginTex( FILE* texFile )
     return 1;
 }
 
-int CreateTexFile( const char* texFileName, Node* node )
+int CreateDiffTexFile( const char* texFileName, Node* node )
 {
     ASSERT( texFileName != NULL, 0 );
     
@@ -771,18 +771,31 @@ int CreateTexFile( const char* texFileName, Node* node )
 
     fprintf( texFile, "\n\\begin{document}\n"
                         "\\maketitle\n\n" );
+    { // Tex body
+        fprintf( texFile, "$$ " );
+        fprintf( texFile, "f(x) = " ); PrintFormula( node, texFile, FormulaType::LATEX );
+        fprintf( texFile, " $$" );
+
+        DiffGraphDump( node, "Original" );
+
+        fprintf( texFile, "\n" );
+
+        // User's input
+        int nDiff = 0;
+        printf( "Enter n differentiation...\n" );
+        scanf(  "%d", &nDiff  );
+
+        char varName[ MaxStrLen ]  = "";
+        printf( "Enter the name of the variable to differentiate...\n" );
+        scanf(  "%s", varName  );
+
+        
     
-    fprintf( texFile, "$$ " );
-    fprintf( texFile, "f(x) = " ); PrintFormula( node, texFile, FormulaType::LATEX );
-    fprintf( texFile, " $$" );
+        const char* graphName = "graph.png";
+        CreateFuncGraphImg( node, graphName, 0.001, 10 );
 
-    fprintf( texFile, "\n" );
-    
-    const char* graphName = "graph.png";
-    CreateFuncGraphImg( node, graphName, 0.001, 10 );
-
-    IncludeImgToTex( graphName, texFile, 0.8 );
-
+        IncludeImgToTex( graphName, texFile, 0.8 );
+    }
     fprintf( texFile, "\n\n\\end{document}\n" );
 
     fclose( texFile );
@@ -834,6 +847,13 @@ int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMa
         double ans = 0;
         CalcValueAtPoint( node, "x", x, &ans );
 
+        if( ans == POISON_DBL ) 
+        {
+            fprintf( stderr, "ERROR: Not all variables are defined...\n" );
+            fclose(  filePlot  );
+            return 0;
+        }
+
         fprintf( filePlot, "%f\t %f\n", x, ans );  
     }
 
@@ -861,7 +881,7 @@ Node* ExpandIntoTaylorSeries( Node* node, int n, double x_0 )
 
     for( int i = 0; i < n; i++ )
     {
-
+        
     }
 
     return NULL;

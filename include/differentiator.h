@@ -124,9 +124,9 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
 // {
 int PrintBeginTex   ( FILE* texFile );
 
-int IncludeImgToTex ( const char* imgName,     FILE* fileName, double scale = 1 );
-int CreateTexFile   ( const char* texFileName, Node* node );
-int CreatePdfFromTex( const char* texFileName );
+int IncludeImgToTex  ( const char* imgName,     FILE* fileName, double scale = 1 );
+int CreateDiffTexFile( const char* texFileName, Node* node );
+int CreatePdfFromTex ( const char* texFileName );
 // }
 
 int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMax, const char* varName = "x" );
