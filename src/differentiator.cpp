@@ -480,6 +480,11 @@ Node* Differentiate( Node* node, const char* varName )
     return newNode;
 }
 
+Node* DifferentiateN( Node* node, const char* varName, const char* linkingExpressions[] )
+{
+
+}
+
 //-----------------------------------------------------------------------------
 
 
@@ -767,18 +772,25 @@ int CreateDiffTexFile( const char* texFileName, Node* node )
     
     FILE* texFile = fopen( texFileName, "w" );
 
-    PrintBeginTex( texFile );    
+    PrintBeginTex( texFile );  
 
-    fprintf( texFile, "\n\\begin{document}\n"
-                        "\\maketitle\n\n" );
+#define TEX_FORMULA( NODE ) \
+    PrintFormula( NODE, texFile, FormulaType::LATEX );
+
+#define PUT( STR ) \
+    fprintf( texFile, STR );
+
+    PUT( "\n\\begin{document}\n"
+            "\\maketitle\n\n" );
     { // Tex body
-        fprintf( texFile, "$$ " );
-        fprintf( texFile, "f(x) = " ); PrintFormula( node, texFile, FormulaType::LATEX );
-        fprintf( texFile, " $$" );
+        PUT( "$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$" ) 
 
         DiffGraphDump( node, "Original" );
+    
+        const char* graphName = "graph.png";
+        CreateFuncGraphImg( node, graphName, 0.001, 10 );
 
-        fprintf( texFile, "\n" );
+        IncludeImgToTex( graphName, texFile, 0.8 );
 
         // User's input
         int nDiff = 0;
@@ -789,14 +801,15 @@ int CreateDiffTexFile( const char* texFileName, Node* node )
         printf( "Enter the name of the variable to differentiate...\n" );
         scanf(  "%s", varName  );
 
-        
-    
-        const char* graphName = "graph.png";
-        CreateFuncGraphImg( node, graphName, 0.001, 10 );
+        PUT( "Давайте теперь возьмем n-ую производную заданной функции: \n" );
 
-        IncludeImgToTex( graphName, texFile, 0.8 );
+        Node* newNode = Differentiate( node, varName );
+
+        PUT( "$$ " ) TEX_FORMULA( newNode ) PUT( " $$" )
     }
-    fprintf( texFile, "\n\n\\end{document}\n" );
+    PUT( "\n\n\\end{document}\n" );
+
+#undef PUT
 
     fclose( texFile );
     return 1;
@@ -806,14 +819,16 @@ int CreatePdfFromTex( const char* texFileName )
 {
     ASSERT( texFileName != NULL, 0 );
 
-    char cmd[ MaxStrLen ] = "";
+    char     cmd[ MaxStrLen ] = "";
     sprintf( cmd, "pdflatex %s", texFileName ); 
 
     system(  cmd  );
 
-    //char name[ MaxStrLen ] = 
+    char name[ MaxStrLen ] = "";
+    sscanf( texFileName, "%[^.]", name );
 
-    // system(  ); delete .log .aux
+    sprintf( cmd, "rm -f %s.aux %s.log", name, name );
+    system(  cmd  ); // delete .log .aux
 
     return 1;
 }

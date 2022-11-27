@@ -31,7 +31,7 @@ int main()
     CreateDiffTexFile( fileTexName, &diffTree );
     CreatePdfFromTex ( fileTexName );
 
-    DiffGraphDump( newNode, "Differentiate" ); 
+    // DiffGraphDump( newNode, "Differentiate" ); 
 
     printf( "\n" );
 
