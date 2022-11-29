@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include <windows.h>
 
 #include "differentiator.h"
@@ -1046,7 +1047,9 @@ int DiffGraphDump( Node* node, const char* str, ... )
 
 int Rand( int minVal, int maxVal )
 {
-    return rand() % ( maxVal - minVal ) + minVal;  
+    srand( time( NULL ) );
+
+    return rand() % ( maxVal - minVal + 1 ) + minVal;  
 }
 
 //-----------------------------------------------------------------------------
