@@ -5,6 +5,7 @@
 
 #include "tree.h"
 #include "stack.h"
+#include "str_algs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,12 @@ static const char* FileDiffDumpName = "diff_dump.html";
 static const double POISON_DBL = 0xBAADF00D32DEAD32;
 
 //-----------------------------------------------------------------------------
+
+struct VarValue
+{
+    const char* var;
+    double      value;
+};
 
 enum FormulaType
 {
@@ -76,7 +83,8 @@ static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int );
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffData( Node* node, const char* diffData );
+int LoadDiffDataTree( const char* diffDataTree, Node* node );
+int LoadDiffDataNums( String* diffDataStrs, int numStrs, int* nDiff, char* varName, int* nTaylor );
 
 int IsUnaryOperation( int  numOp, 
                       int* unaryOperations    = UnaryOperations,
@@ -106,7 +114,8 @@ int   ReplaceNode  ( Node* node, Node* newNode );
 
 int LinkNodeParents( Node* node, Node* parent );
 
-Node* Differentiate( Node* node, const char* varName = "x" );
+Node* Differentiate ( Node* node, const char* varName = "x" );
+Node* DifferentiateN( Node* node, const char* varName, const char* linkExprs[] = NULL, int numExps = 0, FILE* file = NULL );
 
 int IsVarInTree( Node* node, const char* varName = "x" );
 
@@ -125,7 +134,7 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
 int PrintBeginTex   ( FILE* texFile );
 
 int IncludeImgToTex  ( const char* imgName,     FILE* fileName, double scale = 1 );
-int CreateDiffTexFile( const char* texFileName, Node* node );
+int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const char* varName, int nTaylor );
 int CreatePdfFromTex ( const char* texFileName );
 // }
 
@@ -142,6 +151,8 @@ int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum );
 FILE* DiffCreateDotDumpFile( Node* node, const char* fileName );
 int   DiffGraphDump        ( Node* node, const char* str = NULL, ... );
 // } 
+
+int Rand( int minVal, int maxVal );
 
 //-----------------------------------------------------------------------------
 

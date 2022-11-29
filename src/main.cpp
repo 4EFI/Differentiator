@@ -22,19 +22,31 @@ int main()
 
     char* diffData = NULL;
     ReadAllFile( file, &diffData );
-    
-    LoadDiffData( &diffTree, diffData );
-    fclose( file );
+
+    // Divide buffer to strings
+    String* diffDataStrs = NULL;
+    int numStrs = DivideStr( diffData, &diffDataStrs );
+
+    // LoadTree
+    LoadDiffDataTree( diffDataStrs[0].str, &diffTree );
+
+    // Load Nums
+    int nDiff = 0, nTaylor = 0;
+    char varName[ MaxStrLen ] = "";
+    LoadDiffDataNums( diffDataStrs, numStrs, &nDiff, varName, &nTaylor );
+
+    LOG( "nDiff = %d varName = \"%s\" nTaylor = %d", nDiff, varName, nTaylor );
 
     const char* fileTexName = "Manual.tex";
 
-    CreateDiffTexFile( fileTexName, &diffTree );
+    CreateDiffTexFile( fileTexName, &diffTree, nDiff, varName, nTaylor );
     CreatePdfFromTex ( fileTexName );
 
     // DiffGraphDump( newNode, "Differentiate" ); 
 
     printf( "\n" );
 
+    fclose( file );
     free( diffData );
 }
 

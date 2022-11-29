@@ -62,7 +62,7 @@ int SetDiffNode( Node* node, const char* diffData, int* numOp )
     return numReadSyms; 
 }
 
-int LoadDiffData( Node* node, const char* diffData ) 
+int LoadDiffDataTree( const char* diffData, Node* node ) 
 {
     ASSERT( node     != NULL, 0 );
     ASSERT( diffData != NULL, 0 );
@@ -100,6 +100,20 @@ int LoadDiffData( Node* node, const char* diffData )
     }
 
     LinkNodeParents( node, NULL );
+
+    return 1;
+}
+
+int LoadDiffDataNums( String* diffDataStrs, int numStrs, int* nDiff, char* varName, int* nTaylor )
+{
+    ASSERT( diffDataStrs != NULL, 0 );
+
+    // n diff
+    sscanf( diffDataStrs[2].str, "%d", nDiff );
+    // var name
+    sscanf( diffDataStrs[4].str, "%s", varName );
+    // n Taylor
+    sscanf( diffDataStrs[6].str, "%d", nTaylor );
 
     return 1;
 }
@@ -480,9 +494,15 @@ Node* Differentiate( Node* node, const char* varName )
     return newNode;
 }
 
-Node* DifferentiateN( Node* node, const char* varName, const char* linkingExpressions[] )
+Node* DifferentiateN( Node* node, const char* varName, const char* linkExprs[], int numExps, FILE* file )
 {
+    ASSERT( node    != NULL, 0 );
+    ASSERT( varName != NULL, 0 );
 
+    bool isLinkExp = true;
+    if( linkExprs == NULL || file == NULL || numExps == NULL ) isLinkExp = NULL;
+
+    return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -766,7 +786,7 @@ int PrintBeginTex( FILE* texFile )
     return 1;
 }
 
-int CreateDiffTexFile( const char* texFileName, Node* node )
+int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const char* varName, int nTaylor )
 {
     ASSERT( texFileName != NULL, 0 );
     
@@ -791,15 +811,6 @@ int CreateDiffTexFile( const char* texFileName, Node* node )
         CreateFuncGraphImg( node, graphName, 0.001, 10 );
 
         IncludeImgToTex( graphName, texFile, 0.8 );
-
-        // User's input
-        int nDiff = 0;
-        printf( "Enter n differentiation...\n" );
-        scanf(  "%d", &nDiff  );
-
-        char varName[ MaxStrLen ]  = "";
-        printf( "Enter the name of the variable to differentiate...\n" );
-        scanf(  "%s", varName  );
 
         PUT( "Давайте теперь возьмем n-ую производную заданной функции: \n" );
 
@@ -1028,3 +1039,14 @@ int DiffGraphDump( Node* node, const char* str, ... )
 
 //-----------------------------------------------------------------------------
 // End DiffDump
+
+
+// Get random value in [minVal; maxVal] 
+//-----------------------------------------------------------------------------
+
+int Rand( int minVal, int maxVal )
+{
+    return rand() % ( maxVal - minVal ) + minVal;  
+}
+
+//-----------------------------------------------------------------------------
