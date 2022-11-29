@@ -18,6 +18,19 @@ static const double POISON_DBL = 0xBAADF00D32DEAD32;
 
 //-----------------------------------------------------------------------------
 
+static const char* LinkExprs[] = 
+{
+    "Ну я думаю, если с пивком посидеть подумать, то получается следующее",
+    "Вот только скажите, что не очевидно следующее выражение",
+    "Все уже поняли, что",
+    "Моя мама сказала, что будет так, значит будет так",
+    "Следующее выражение предлагаю получить вам самостоятельно",
+    "Следующее выражение остается как упражнение",
+    "Сам М-А-А-А-А-К-Р-О-С получил следующее"
+};
+
+const int NumLinkExprs = sizeof( LinkExprs ) / sizeof( char* );
+
 struct VarValue
 {
     const char* var;
@@ -115,7 +128,7 @@ int   ReplaceNode  ( Node* node, Node* newNode );
 int LinkNodeParents( Node* node, Node* parent );
 
 Node* Differentiate ( Node* node, const char* varName = "x" );
-Node* DifferentiateN( Node* node, const char* varName, const char* linkExprs[] = NULL, int numExps = 0, FILE* file = NULL );
+Node* DifferentiateN( Node* node, const char* varName, int n, const char* linkExprs[] = NULL, int numExps = 0, FILE* file = NULL );
 
 int IsVarInTree( Node* node, const char* varName = "x" );
 

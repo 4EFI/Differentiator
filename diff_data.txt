@@ -1,6 +1,6 @@
-(x)^(5)
+sin((x)^(2))
 n diff:
-1
+4
 name of var to diff:
 x
 n Taylor:

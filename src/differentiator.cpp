@@ -75,7 +75,7 @@ int LoadDiffDataTree( const char* diffData, Node* node )
     for( int i = 0; i < len; i++ )
     {
         if( diffData[i] == ' ' ) continue;
-        
+
         if ( diffData[i] == '(' )
         {
             if( !currNode->left && IsUnaryOperation( currOp ) == -1 )
@@ -86,6 +86,7 @@ int LoadDiffDataTree( const char* diffData, Node* node )
             else
             {
                 currNode = TreeAddChild( currNode, NULL, RIGHT_SIDE );
+                currOp   = -1;
                 continue;
             }
         }
@@ -495,15 +496,48 @@ Node* Differentiate( Node* node, const char* varName )
     return newNode;
 }
 
-Node* DifferentiateN( Node* node, const char* varName, const char* linkExprs[], int numExps, FILE* file )
+Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
 {
     ASSERT( node    != NULL, 0 );
     ASSERT( varName != NULL, 0 );
+    ASSERT( file    != NULL, 0 );
+ 
+    if( n <= 0 ) return node;
 
-    bool isLinkExp = true;
-    if( linkExprs == NULL || file == NULL || numExps == NULL ) isLinkExp = NULL;
+    Node* newNode = node;
 
-    return NULL;
+#define PRINT_RAND_PHRASE \
+    fprintf( file, "\\\\%s:\\\\", LinkExprs[ Rand(0, NumLinkExprs - 1) ] );
+
+#define PUT( STR, ... ) \
+    fprintf( file, STR, ##__VA_ARGS__ );
+
+#define TEX_FORMULA( NODE ) \
+    PrintFormula( NODE, file, FormulaType::LATEX );
+
+
+    for( int i = 1; i <= n; i++ )
+    {
+        newNode = Differentiate( newNode, varName );
+        PRINT_RAND_PHRASE
+
+        DiffGraphDump( newNode, "Differentiate" ); 
+
+        PUT( "$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$" )
+
+        Simplify( newNode );
+        PRINT_RAND_PHRASE
+
+        DiffGraphDump( newNode, "Simplify" ); 
+
+        PUT( "$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$" )
+    }
+
+#undef PRINT_RAND_PHRASE
+#undef PUT
+#undef TEX_FORMULA
+
+    return newNode;
 }
 
 //-----------------------------------------------------------------------------
@@ -798,8 +832,8 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 #define TEX_FORMULA( NODE ) \
     PrintFormula( NODE, texFile, FormulaType::LATEX );
 
-#define PUT( STR ) \
-    fprintf( texFile, STR );
+#define PUT( STR, ... ) \
+    fprintf( texFile, STR, ##__VA_ARGS__ );
 
     PUT( "\n\\begin{document}\n"
             "\\maketitle\n\n" );
@@ -815,7 +849,7 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         PUT( "Давайте теперь возьмем n-ую производную заданной функции: \n" );
 
-        Node* newNode = Differentiate( node, varName );
+        Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
         PUT( "$$ " ) TEX_FORMULA( newNode ) PUT( " $$" )
     }
@@ -1047,8 +1081,6 @@ int DiffGraphDump( Node* node, const char* str, ... )
 
 int Rand( int minVal, int maxVal )
 {
-    srand( time( NULL ) );
-
     return rand() % ( maxVal - minVal + 1 ) + minVal;  
 }
 

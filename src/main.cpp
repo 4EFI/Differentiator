@@ -2,6 +2,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "differentiator.h"
 #include "tree.h"
@@ -14,6 +15,8 @@
 
 int main()
 {
+    srand( time( NULL ) );
+    
     Node       diffTree = { 0 };
     NodeCtor( &diffTree );
     
@@ -40,9 +43,7 @@ int main()
     const char* fileTexName = "Manual.tex";
 
     CreateDiffTexFile( fileTexName, &diffTree, nDiff, varName, nTaylor );
-    //CreatePdfFromTex ( fileTexName );
-
-    // DiffGraphDump( newNode, "Differentiate" ); 
+    CreatePdfFromTex ( fileTexName );
 
     printf( "\n" );
 
