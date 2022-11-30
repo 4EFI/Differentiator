@@ -520,14 +520,14 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
         newNode = Differentiate( newNode, varName );
         PRINT_RAND_PHRASE
 
-        DiffGraphDump( newNode, "Differentiate" ); 
+        DiffGraphDump( newNode, "Differentiate" ); // Dump
 
         PUT( "\n\n$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$\n\n" )
 
         Simplify( newNode );
         PRINT_RAND_PHRASE
 
-        DiffGraphDump( newNode, "Simplify" ); 
+        DiffGraphDump( newNode, "Simplify" ); // Dump
 
         PUT( "\n\n$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$\n\n" )
     }
@@ -861,7 +861,7 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         PUT( "Дай хоть посмотрю на тебя, может проще станет...\n" )
 
-        DiffGraphDump( node, "Original" );
+        DiffGraphDump( node, "Original" ); // Dump
     
         const char* graphName = "graph.png";
         CreateFuncGraphImg( node, graphName, 0.001, 10 );
@@ -874,17 +874,26 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
+        PUT( "\\subsection{ Разложение в ряд Тейлора }\n" )
+        PUT( "А я и не знал, что я так умею. Ну раз n-ую производную взял, то и в ряд Тейлора разложу. "
+             "Ну что же, давай попробую, может что и выйдет:\n\\\\\n" )
+
         Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor, 2 );
 
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
 
-        DiffGraphDump( taylorNode, "Taylor" );
+        DiffGraphDump( taylorNode, "Taylor" ); // Dump
 
+        PUT( "Давай я чутка упрощу, а то громоздко выгядит:\n" )
+        
         Simplify( taylorNode );
 
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
 
-        DiffGraphDump( taylorNode, "Simplify Taylor" );
+        PUT( "Ну вот, совсем другое дело, оказалось и не так сложно, а главное все очевидно.\n\n" )
+
+        DiffGraphDump( taylorNode, "Simplify Taylor" ); // Dump
+
     }
     PUT( "\n\n\\end{document}\n" );
 
@@ -990,16 +999,11 @@ Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0
 
         Node* calcedNode = CalcValueAtPoint( diffNode, varName, x_0 );
 
-        newNode = CREATE_OP_NODE(  OP_ADD, 
-                                   newNode, 
-                                   CREATE_OP_NODE( OP_DIV, CREATE_OP_NODE( OP_MUL, calcedNode, 
-                                                                                   CREATE_OP_NODE( OP_DEG, SUB_NODE,
-                                                                                                           CREATE_VAL_NODE( i ) ) ), 
-                                                           CREATE_VAL_NODE( currFact ) ) );
+        newNode = ADD(  newNode, DIV( MUL( calcedNode, POW( SUB_NODE, CREATE_VAL_NODE( i ) ) ), CREATE_VAL_NODE( currFact ) )  );
     }
 
     // o( (x - x_0)^n
-    Node* smallNode = CREATE_OP_NODE(  OP_O, NULL, CREATE_OP_NODE( OP_DEG, SUB_NODE, CREATE_VAL_NODE( n ) )  );
+    Node* smallNode = CREATE_OP_NODE(  OP_O, NULL, POW( SUB_NODE, CREATE_VAL_NODE( n ) )  );
 
     // newNode + o( (x - x_0)^n )
     newNode = CREATE_OP_NODE(  OP_ADD, newNode, smallNode  ); 
@@ -1015,6 +1019,24 @@ uint64_t Factorial( uint64_t num )
     if( num <= 1 ) return 1;
 
     return num * Factorial( num - 1 );
+}
+
+//-----------------------------------------------------------------------------
+
+
+// Tangent equation
+//-----------------------------------------------------------------------------
+
+Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val )
+{
+    ASSERT( node    != NULL, NULL );
+    ASSERT( varName != NULL, NULL );
+
+    Node*  diffNode = Differentiate   ( node, varName );
+    Node*  fX_0     = CalcValueAtPoint( node, varName, val );
+
+    Node*  newNode  = ADD(  fX_0, MUL( diffNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) )  );
+    return newNode;
 }
 
 //-----------------------------------------------------------------------------

@@ -160,6 +160,8 @@ Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0
 
 uint64_t Factorial( uint64_t num );
 
+Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val );
+
 // DiffDump 
 // {
 int GraphVizNodes( Node* node, FILE* dotFile, int* nodeNum ); 
