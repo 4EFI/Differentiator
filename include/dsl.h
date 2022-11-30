@@ -31,8 +31,8 @@
 #define R_VAR node->right->value->varValue
 #define L_VAR node->left ->value->varValue 
 
-#define CREATE_VAL_NODE( NUM ) CreateNode( VAL_TYPE, NUM, -1, NULL, NULL, NULL ) 
-#define CREATE_VAR_NODE( VAR ) CreateNode( VAR_TYPE, 0,   -1, VAR,  NULL, NULL )
+#define CREATE_VAL_NODE( NUM ) CreateNode( VAL_TYPE, NUM, -1 ) 
+#define CREATE_VAR_NODE( VAR ) CreateNode( VAR_TYPE, 0,   -1, (char*)VAR )
 
 #define CREATE_OP_NODE( OP, L, R ) CreateNode( OP_TYPE, 0, OP, NULL, L, R )
 

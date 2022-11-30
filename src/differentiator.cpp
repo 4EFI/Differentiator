@@ -201,7 +201,7 @@ int PrintFormulaRecursively( Node* node, FILE* file, int formulaType )
 
     int isLatex = ( formulaType == FormulaType::LATEX ? 1 : 0 );
 
-    if( node->left && node->right && node->parent != NULL )
+    if( ( node->left - node->right ) && node->parent != NULL )
     {
         fprintf( file, "( " );  
     }
@@ -232,7 +232,7 @@ int PrintFormulaRecursively( Node* node, FILE* file, int formulaType )
 
     if( isLatex ) PrintTex( End );
 
-    if( node->left && node->right && node->parent != NULL )
+    if( ( node->left - node->right ) && node->parent != NULL )
     {
         fprintf( file, " )" );  
     }
@@ -507,14 +507,13 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
     Node* newNode = node;
 
 #define PRINT_RAND_PHRASE \
-    fprintf( file, "\\\\%s:\\\\", LinkExprs[ Rand(0, NumLinkExprs - 1) ] );
+    if( file != NULL ) fprintf( file, "\n%s:\n", LinkExprs[ Rand(0, NumLinkExprs - 1) ] );
 
 #define PUT( STR, ... ) \
-    fprintf( file, STR, ##__VA_ARGS__ );
+    if( file != NULL ) fprintf( file, STR, ##__VA_ARGS__ );
 
 #define TEX_FORMULA( NODE ) \
-    PrintFormula( NODE, file, FormulaType::LATEX );
-
+    if( file != NULL ) PrintFormula( NODE, file, FormulaType::LATEX );
 
     for( int i = 1; i <= n; i++ )
     {
@@ -523,14 +522,14 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
 
         DiffGraphDump( newNode, "Differentiate" ); 
 
-        PUT( "$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$" )
+        PUT( "\n\n$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$\n\n" )
 
         Simplify( newNode );
         PRINT_RAND_PHRASE
 
         DiffGraphDump( newNode, "Simplify" ); 
 
-        PUT( "$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$" )
+        PUT( "\n\n$$ f^{(%d)}(%s) = ", i, varName ) TEX_FORMULA( newNode ) PUT( " $$\n\n" )
     }
 
 #undef PRINT_RAND_PHRASE
@@ -692,6 +691,18 @@ Node* GetSimplifiedNeutralNode( Node* node )
                 } 
                 break;
 
+            case OP_DEG:
+                // x^1 
+                if( IS_R_VAL && CompareDoubles( R_VAL, 1 ) )
+                {
+                    return node->left;
+                }
+                // 1^x
+                if( IS_L_VAL && CompareDoubles( L_VAL, 1 ) )
+                {
+                    return CREATE_VAL_NODE( 1 );
+                }
+
             default:
                 return NULL;
         }
@@ -804,7 +815,7 @@ int PrintBeginTex( FILE* texFile )
 
     { // fprintf BeginTex
     fprintf( texFile,  
-             "\\documentclass[a4paper, 12pt]{article}\n"
+             "\\documentclass{article}\n"
              "\n"
              "\\usepackage[T2A]{fontenc}\n"
              "\\usepackage[cp1251]{inputenc}\n"
@@ -838,7 +849,7 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
     PUT( "\n\\begin{document}\n"
             "\\maketitle\n\n" );
     { // Tex body
-        PUT( "$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$" ) 
+        PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$\n\n" ) 
 
         DiffGraphDump( node, "Original" );
     
@@ -851,11 +862,22 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
-        PUT( "$$ " ) TEX_FORMULA( newNode ) PUT( " $$" )
+        Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor );
+
+        PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
+
+        DiffGraphDump( taylorNode, "Taylor" );
+
+        Simplify( taylorNode );
+
+        PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
+
+        DiffGraphDump( taylorNode, "Simplify Taylor" );
     }
     PUT( "\n\n\\end{document}\n" );
 
 #undef PUT
+#undef TEX_FORMULA
 
     fclose( texFile );
     return 1;
@@ -934,18 +956,46 @@ int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMa
 // Taylor
 //-----------------------------------------------------------------------------
 
-Node* ExpandIntoTaylorSeries( Node* node, int n, double x_0 )
+Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0 )
 {
-    ASSERT( node != NULL, 0 );
+    ASSERT( node    != NULL, 0 );
+    ASSERT( varName != NULL, 0 );
 
-    Node* currNode = node;
+    Node* newNode  = CalcValueAtPoint( node, varName, x_0 );
+    Node* diffNode = node;
 
-    for( int i = 0; i < n; i++ )
-    {
+    int currFact = 1;
+
+// ( x - x_0 )
+#define SUB_NODE \
+    CREATE_OP_NODE(  OP_SUB, CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( x_0 )  )
+
+    for( int i = 1; i <= n; i++ )
+    {   
+        currFact *= i;
         
+        diffNode = Differentiate( diffNode, varName );
+
+        Node* calcedNode = CalcValueAtPoint( diffNode, varName, x_0 );
+
+        newNode = CREATE_OP_NODE(  OP_ADD, 
+                                   newNode, 
+                                   CREATE_OP_NODE( OP_DIV, CREATE_OP_NODE( OP_MUL, calcedNode, 
+                                                                                   CREATE_OP_NODE( OP_DEG, SUB_NODE,
+                                                                                                           CREATE_VAL_NODE( i ) ) ), 
+                                                           CREATE_VAL_NODE( currFact ) ) );
     }
 
-    return NULL;
+    // o( (x - x_0)^n
+    Node* smallNode = CREATE_OP_NODE(  OP_O, NULL, CREATE_OP_NODE( OP_DEG, SUB_NODE, CREATE_VAL_NODE( n ) )  );
+
+    // newNode + o( (x - x_0)^n )
+    newNode = CREATE_OP_NODE(  OP_ADD, newNode, smallNode  ); 
+
+#undef SUB_NODE
+
+    LinkNodeParents( newNode, NULL );                                
+    return newNode;
 }
 
 uint64_t Factorial( uint64_t num )

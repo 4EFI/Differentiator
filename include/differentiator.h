@@ -59,7 +59,8 @@ enum OperationTypes
     OP_DEG,
     OP_SIN,
     OP_COS,
-    OP_LN
+    OP_LN,
+    OP_O
 };
 
 struct Operation
@@ -81,6 +82,7 @@ static Operation Operations[] =
     { OP_SIN, "sin", "",          "\\sin{ ",   " }" },
     { OP_COS, "cos", "",          "\\cos{ ",   " }" },
     { OP_LN,  "ln",  "",          "\\ln{ ",    " }" },
+    { OP_O,   "o",   "",          "o{ ",       " }" }
 };
 
 static int NumOperations = sizeof( Operations ) / sizeof( Operation );
@@ -89,7 +91,8 @@ static int UnaryOperations[] =
 {
     OP_SIN,
     OP_COS,
-    OP_LN
+    OP_LN,
+    OP_O
 };
 
 static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int ); 
@@ -128,7 +131,7 @@ int   ReplaceNode  ( Node* node, Node* newNode );
 int LinkNodeParents( Node* node, Node* parent );
 
 Node* Differentiate ( Node* node, const char* varName = "x" );
-Node* DifferentiateN( Node* node, const char* varName, int n, const char* linkExprs[] = NULL, int numExps = 0, FILE* file = NULL );
+Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file = NULL );
 
 int IsVarInTree( Node* node, const char* varName = "x" );
 
@@ -153,7 +156,7 @@ int CreatePdfFromTex ( const char* texFileName );
 
 int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMax, const char* varName = "x" );
 
-Node* ExpandIntoTaylorSeries( Node* node, int n, double x_0 = 0 );
+Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0 = 0 );
 
 uint64_t Factorial( uint64_t num );
 

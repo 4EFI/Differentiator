@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt]{article}
+\documentclass{article}
 
 \usepackage[T2A]{fontenc}
 \usepackage[cp1251]{inputenc}
@@ -15,27 +15,59 @@
 \begin{document}
 \maketitle
 
-$$ f(x) = \sin{ ( x^{ 2 } ) } $$\begin{figure}[H]
+
+
+$$ f(x) = ( 1 + x )^{ 2 } $$
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.800000\linewidth]{"graph.png"}
 \end{figure}
 Давайте теперь возьмем n-ую производную заданной функции: 
 
-\\Моя мама сказала, что будет так, значит будет так:\\
-$$ f^{(1)}(x) = \cos{ ( x^{ 2 } ) } \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) $$
-\\Ну я думаю, если с пивком посидеть подумать, то получается следующее:\\
-$$ f^{(1)}(x) = \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) $$
-\\Следующее выражение предлагаю получить вам самостоятельно:\\
-$$ f^{(2)}(x) = ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) $$
-\\Вот только скажите, что не очевидно следующее выражение:\\
-$$ f^{(2)}(x) = ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 0 } ) ) ) $$
-\\Следующее выражение предлагаю получить вам самостоятельно:\\
-$$ f^{(3)}(x) = ( ( ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot -1 ) + ( \sin{ ( x^{ 2 } ) } \cdot 0 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) + ( ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( ( 0 \cdot ( x^{ 0 } ) ) + ( 2 \cdot ( ( 0 \cdot ( x^{ ( 0 - 1 ) } ) ) \cdot 1 ) ) ) ) ) $$
-\\Моя мама сказала, что будет так, значит будет так:\\
-$$ f^{(3)}(x) = ( ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) $$
-\\Сам М-А-А-А-А-К-Р-О-С получил следующее:\\
-$$ f^{(4)}(x) = ( ( ( ( ( ( ( ( ( ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) \cdot -1 ) + ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot 0 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot -1 ) + ( \sin{ ( x^{ 2 } ) } \cdot 0 ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 0 \cdot ( x^{ 0 } ) ) + ( 2 \cdot ( ( 0 \cdot ( x^{ ( 0 - 1 ) } ) ) \cdot 1 ) ) ) ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) + ( ( ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot -1 ) + ( \sin{ ( x^{ 2 } ) } \cdot 0 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) + ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( ( 0 \cdot ( x^{ 0 } ) ) + ( 2 \cdot ( ( 0 \cdot ( x^{ ( 0 - 1 ) } ) ) \cdot 1 ) ) ) ) ) ) + ( ( ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( ( 2 \cdot ( x^{ ( 2 - 1 ) } ) ) \cdot 1 ) ) \cdot -1 ) + ( \sin{ ( x^{ 2 } ) } \cdot 0 ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( ( 0 \cdot ( x^{ 1 } ) ) + ( 2 \cdot ( ( 1 \cdot ( x^{ ( 1 - 1 ) } ) ) \cdot 1 ) ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) + ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( ( 0 \cdot ( x^{ 0 } ) ) + ( 2 \cdot ( ( 0 \cdot ( x^{ ( 0 - 1 ) } ) ) \cdot 1 ) ) ) ) ) $$
-\\Вот только скажите, что не очевидно следующее выражение:\\
-$$ f^{(4)}(x) = ( ( ( ( ( ( ( ( ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) $$$$ ( ( ( ( ( ( ( ( ( ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) + ( ( ( ( ( \cos{ ( x^{ 2 } ) } \cdot ( 2 \cdot ( x^{ 1 } ) ) ) \cdot -1 ) \cdot ( 2 \cdot ( x^{ 1 } ) ) ) + ( ( \sin{ ( x^{ 2 } ) } \cdot -1 ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) ) \cdot ( 2 \cdot ( x^{ 0 } ) ) ) $$
+Сам М-А-А-А-А-К-Р-О-С получил следующее:
+
+
+$$ f^{(1)}(x) = ( 2 \cdot ( ( 1 + x )^{ ( 2 - 1 ) } ) ) \cdot ( 0 + 1 ) $$
+
+
+Следующее выражение остается как упражнение:
+
+
+$$ f^{(1)}(x) = 2 \cdot ( 1 + x ) $$
+
+
+Следующее выражение предлагаю получить вам самостоятельно:
+
+
+$$ f^{(2)}(x) = ( 0 \cdot ( 1 + x ) ) + ( 2 \cdot ( 0 + 1 ) ) $$
+
+
+Моя мама сказала, что будет так, значит будет так:
+
+
+$$ f^{(2)}(x) = 2 $$
+
+
+Следующее выражение предлагаю получить вам самостоятельно:
+
+
+$$ f^{(3)}(x) = 0 $$
+
+
+Моя мама сказала, что будет так, значит будет так:
+
+
+$$ f^{(3)}(x) = 0 $$
+
+
+
+$$ f(x) = ( ( 1 + ( \frac{ ( 2 \cdot ( ( x - 0 )^{ 1 } ) ) }{ 1 } ) ) + ( \frac{ ( 2 \cdot ( ( x - 0 )^{ 2 } ) ) }{ 2 } ) ) + ( o{ ( ( x - 0 )^{ 2 } ) } ) $$
+
+
+
+$$ f(x) = ( ( 1 + ( 2 \cdot x ) ) + ( \frac{ ( 2 \cdot ( x^{ 2 } ) ) }{ 2 } ) ) + ( o{ ( x^{ 2 } ) } ) $$
+
+
 
 \end{document}
