@@ -854,6 +854,7 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
     PUT( "\n\\begin{document}\n"
             "\\maketitle\n\n" );
     { // Tex body
+
         PUT( "\\subsection{ Производная }\n" )
         PUT( "Перец блин ашалел, когда такую функцию увидел:\n" )
         
@@ -874,6 +875,8 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
+        //
+
         PUT( "\\subsection{ Разложение в ряд Тейлора }\n" )
         PUT( "А я и не знал, что я так умею. Ну раз n-ую производную взял, то и в ряд Тейлора разложу. "
              "Ну что же, давай попробую, может что и выйдет:\n\\\\\n" )
@@ -893,6 +896,28 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
         PUT( "Ну вот, совсем другое дело, оказалось и не так сложно, а главное все очевидно.\n\n" )
 
         DiffGraphDump( taylorNode, "Simplify Taylor" ); // Dump
+
+        //
+
+        PUT( "\\subsection{ Уравнение касательной в точке }\n" )
+        PUT( "Ну и запросы у тебя, уравнение касательной в точке захотел. Ладно. Хорошо. "
+             "А ты знал, что это очень просто сделать: $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
+             "Руководствуясь этим, получаем следующее:\n\\\\\n" )
+
+        Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
+
+        PUT( "\n\n$$ t(x) = " )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
+
+        PUT( "Буквально чуть-чуть упростим и получим уравнение "
+             "касательной к графику в точке %s = %d:\n\\\\\n", varName, 0 )
+
+        Simplify( tangentNode );
+
+        PUT( "\n\n$$ t(x) = " )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
+
+        //
+
+        
 
     }
     PUT( "\n\n\\end{document}\n" );
@@ -1032,10 +1057,12 @@ Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val )
     ASSERT( node    != NULL, NULL );
     ASSERT( varName != NULL, NULL );
 
-    Node*  diffNode = Differentiate   ( node, varName );
-    Node*  fX_0     = CalcValueAtPoint( node, varName, val );
+    Node*  diffNode   = Differentiate   ( node, varName );
+    Node*  fX_0       = CalcValueAtPoint( node, varName, val );
 
-    Node*  newNode  = ADD(  fX_0, MUL( diffNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) )  );
+    Node*  calcedNode = CalcValueAtPoint( diffNode, varName, val );
+
+    Node*  newNode    = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  );
     return newNode;
 }
 
