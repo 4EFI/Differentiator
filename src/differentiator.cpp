@@ -545,21 +545,60 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
 // Simplify
 //-----------------------------------------------------------------------------
 
-Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
+double GetChildNodeValue( Node* node, int side, VarValue arrVarValue[], int num )
 {
-    ASSERT( node != NULL, 0 );
 
-    if( node->value == NULL || !IS_OP ) return NULL; 
+// L or R child is value or not
+#define IS_SIDE_VAL \
+    ( side == LEFT_SIDE ) ? IS_L_VAL : IS_R_VAL
 
-    double l_val = 0, r_val = 0;
+// L or R child is variable or not
+#define IS_SIDE_VAR \
+    ( side == LEFT_SIDE ) ? IS_L_VAR : IS_R_VAR 
 
-    if/* */( IS_L_VAL )                                         l_val = L_VAL;
-    else if( IS_L_VAR && varName && !strcmp( L_VAR, varName ) ) l_val = val;
-    else if( !( !IS_L_EXISTS && IS_R_EXISTS ) )                 return NULL;
+#define VAL \
+    ( side == LEFT_SIDE ) ? L_VAL : R_VAL
 
-    if/* */( IS_R_VAL )                                         r_val = R_VAL;
-    else if( IS_R_VAR && varName && !strcmp( R_VAR, varName ) ) r_val = val;
-    else return NULL;
+#define VAR \
+    ( side == LEFT_SIDE ) ? L_VAR : R_VAR
+
+
+    if/* */( IS_SIDE_VAL ) return VAL;
+    else if( IS_SIDE_VAR )
+    {
+        for( int i = 0; i < num; i++ )
+        {
+            if( arrVarValue[i].var && !strcmp( VAR, arrVarValue[i].var ) ) 
+            {
+                return arrVarValue[i].value;
+            }
+        }
+    }
+
+
+#undef IS_SIDE_VAL
+#undef IS_SIDE_VAR
+#undef VAL
+#undef VAR
+
+    return POISON_DBL;
+}
+
+Node* GetSimplifiedConstantNode( Node* node, VarValue arrVarValue[], int num )
+{
+    ASSERT( node != NULL, NULL );
+
+    if( node->value == NULL || !IS_OP ) return NULL;
+
+    double l_val = GetChildNodeValue( node, LEFT_SIDE,  arrVarValue, num );
+    if(    l_val == POISON_DBL && IS_L_EXISTS    ) return NULL;
+
+    double r_val = GetChildNodeValue( node, RIGHT_SIDE, arrVarValue, num );
+    if(    r_val == POISON_DBL    ) return NULL;
+    
+    // if/* */( IS_R_VAL )                                         r_val = R_VAL;
+    // else if( IS_R_VAR && varName && !strcmp( R_VAR, varName ) ) r_val = val;
+    // else return NULL;
 
     // Simplify 
     int opNum = node->value->opValue;
@@ -592,6 +631,13 @@ Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
     }    
 
     return NULL;
+}
+
+Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
+{
+    VarValue varValue = { varName, val };
+
+    return GetSimplifiedConstantNode( node, &varValue, 1 );
 }
 
 int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* varName, double val )
@@ -906,18 +952,18 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
 
-        PUT( "\n\n$$ t(x) = " )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
+        PUT( "\n\n$$ t(%s) = ", varName )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
 
         PUT( "Буквально чуть-чуть упростим и получим уравнение "
              "касательной к графику в точке %s = %d:\n\\\\\n", varName, 0 )
 
         Simplify( tangentNode );
 
-        PUT( "\n\n$$ t(x) = " )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
+        PUT( "\n\n$$ t(%s) = ", varName )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
 
         //
 
-        
+
 
     }
     PUT( "\n\n\\end{document}\n" );

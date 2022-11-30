@@ -135,6 +135,9 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file = NULL 
 
 int IsVarInTree( Node* node, const char* varName = "x" );
 
+double GetChildNodeValue( Node* node, int side, VarValue arrVarValue[], int num );
+
+Node* GetSimplifiedConstantNode( Node* node, VarValue    arrVarValue[],  int    num );
 Node* GetSimplifiedConstantNode( Node* node, const char* varName = NULL, double val = 0 ); 
 Node* GetSimplifiedNeutralNode ( Node* node );
 
