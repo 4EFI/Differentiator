@@ -702,6 +702,11 @@ Node* GetSimplifiedNeutralNode( Node* node )
                 {
                     return CREATE_VAL_NODE( 1 );
                 }
+                // x^0
+                if( IS_R_VAL && CompareDoubles( R_VAL, 0 ) )
+                {
+                    return CREATE_VAL_NODE( 1 );
+                }
 
             default:
                 return NULL;
@@ -849,7 +854,12 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
     PUT( "\n\\begin{document}\n"
             "\\maketitle\n\n" );
     { // Tex body
+        PUT( "\\subsection{ Производная }\n" )
+        PUT( "Перец блин ашалел, когда такую функцию увидел:\n" )
+        
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$\n\n" ) 
+
+        PUT( "Дай хоть посмотрю на тебя, может проще станет...\n" )
 
         DiffGraphDump( node, "Original" );
     
@@ -858,11 +868,13 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         IncludeImgToTex( graphName, texFile, 0.8 );
 
-        PUT( "Давайте теперь возьмем n-ую производную заданной функции: \n" );
+        PUT( "Мдааааа, ну и говнище. Стоп. Какую-какую производную брать? %d? " 
+             "Ты меня за кого принимаешь, за прогу, которая может взять любую производную? "
+             "А блин, меня же учили на первом курсе, ладно, давай сюда свою функцию:\n\\\\\n", nDiff )
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
-        Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor );
+        Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor, 2 );
 
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
 

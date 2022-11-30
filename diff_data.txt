@@ -1,7 +1,7 @@
-((1)+(x))^(2)
+sin((x)-(2))
 n diff:
-3
+2
 name of var to diff:
 x
 n Taylor:
-2
+3
