@@ -1,4 +1,4 @@
-((x)-(n))^(2)
+sin((x)-(2))
 n diff:
 2
 name of var to diff:

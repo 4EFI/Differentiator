@@ -52,14 +52,19 @@ enum Types
 
 enum OperationTypes
 {
-    OP_ADD, 
-    OP_SUB,
-    OP_MUL,
-    OP_DIV,
-    OP_DEG,
-    OP_SIN,
-    OP_COS,
-    OP_LN,
+    OP_ADD = 0, 
+    OP_SUB = 1,
+
+    OP_MUL = 3,
+    OP_DIV = 4,
+
+    OP_LN  = 6,
+
+    OP_SIN = 8,
+    OP_COS = 9,
+
+    OP_DEG = 11,
+
     OP_O
 };
 

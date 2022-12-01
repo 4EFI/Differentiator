@@ -201,10 +201,16 @@ int PrintFormulaRecursively( Node* node, FILE* file, int formulaType )
 
     int isLatex = ( formulaType == FormulaType::LATEX ? 1 : 0 );
 
-    if( ( node->left - node->right ) && node->parent != NULL )
-    {
-        fprintf( file, "( " );  
-    }
+    bool isBracket = ( ( node->left - node->right )       &&
+
+                      !( node->value->opValue >= OP_DIV   && 
+                         node->value->opValue <= OP_COS ) &&
+
+                         node->parent != NULL             &&
+
+		              !( node->value->opValue - node->parent->value->opValue > 1 ) );
+
+    if( isBracket ) fprintf( file, "( " );  
     
     if( isLatex ) PrintTex( Begin );
 
@@ -232,10 +238,7 @@ int PrintFormulaRecursively( Node* node, FILE* file, int formulaType )
 
     if( isLatex ) PrintTex( End );
 
-    if( ( node->left - node->right ) && node->parent != NULL )
-    {
-        fprintf( file, " )" );  
-    }
+    if( isBracket ) fprintf( file, " )" );  
 
     return 1;
 }
@@ -942,7 +945,12 @@ int PrintBeginTex( FILE* texFile )
     return 1;
 }
 
-int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const char* varName, int nTaylor )
+int CreateDiffTexFile( const char* texFileName, 
+                       Node*       node, 
+                       int         nDiff, 
+                       const char* varName, 
+                       int         nTaylor
+                     /*  double      xTaylor, */)
 {
     ASSERT( texFileName != NULL, 0 );
     
