@@ -1168,13 +1168,13 @@ Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val )
     ASSERT( node    != NULL, NULL );
     ASSERT( varName != NULL, NULL );
 
-    Node*  diffNode   = Differentiate   ( node, varName );
-    Node*  fX_0       = CalcValueAtPoint( node, varName, val );
+    Node*  diffNode   = Differentiate          ( node,     varName );
+    Node*  fX_0       = FuncSubstituteVarValues( node,     varName, val );
+    Node*  calcedNode = FuncSubstituteVarValues( diffNode, varName, val );
 
-    Node*  calcedNode = CalcValueAtPoint( diffNode, varName, val );
-
-    Node*     newNode = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  );
-    Simplify( newNode );
+    Node*            newNode = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  ); 
+    LinkNodeParents( newNode, NULL );
+    Simplify       ( newNode );
 
     return newNode;
 }
