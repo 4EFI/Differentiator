@@ -149,7 +149,7 @@ Node* FuncSubstituteVarValues( const Node* node, const VarValue arrVarValue[], i
 Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int    num, double* answer = NULL );
 Node* CalcValueAtPoint( const Node* node, const char*    varName,       double val, double* answer = NULL );
 
-double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const int errors[], int num );
+double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const VarValue errors[], int num, Node** errorNode = NULL );
 
 // Latex
 // {

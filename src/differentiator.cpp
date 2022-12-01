@@ -863,7 +863,7 @@ Node* CalcValueAtPoint( const Node* node, const char* varName, double val, doubl
     return CalcValueAtPoint( node, &varValue, 1, answer );
 }  
 
-double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const int errors[], int num )
+double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const VarValue errors[], int num, Node** errorNode )
 {
     ASSERT( node        != NULL, NULL );
     ASSERT( arrVarValue != NULL, NULL );
@@ -874,24 +874,28 @@ double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const i
     {
         Node* diffNode = Differentiate( node, arrVarValue[i].var );
 
-        diffNode = FuncSubstituteVarValues( diffNode, arrVarValue, num );
+        // (f'(x) * dx)^2
+        Node* tempNode = POW(  MUL( diffNode, CREATE_VAR_NODE( errors[i].var ) ), CREATE_VAL_NODE( 2 )  );
 
-        Node*     tempNode = POW(  MUL( diffNode, CREATE_VAL_NODE( errors[i] ) ), CREATE_VAL_NODE( 2 )  );
-        Simplify( tempNode );
+        newNode = ADD( newNode, tempNode ); 
+        
+        LinkNodeParents( newNode, NULL );
+    } 
 
-        if( i > 0 ) newNode = ADD( newNode, tempNode );
-    }
+    // sqrt( all )
+    Node* errorNodeLocal = POW(  newNode, CREATE_VAL_NODE( 0.5 )  );
 
-    DiffGraphDump( newNode, "Error" );
+    LinkNodeParents( errorNodeLocal, NULL );
+    Simplify       ( errorNodeLocal );
 
-    Node*     errorNode = POW(  newNode, CREATE_VAL_NODE( 0.5 )  );
-    Simplify( errorNode );
+    if( errorNode ) *errorNode = errorNodeLocal;
 
-    DiffGraphDump( errorNode, "Error" );
+    errorNodeLocal = FuncSubstituteVarValues( errorNodeLocal, arrVarValue, num );
+    errorNodeLocal = FuncSubstituteVarValues( errorNodeLocal, errors,      num );
     
-    if( newNode->left || newNode->right ) printf( "ERROR: missing variable value...\n" );
+    if( errorNodeLocal->left || errorNodeLocal->right ) return POISON_DBL;
     
-    return newNode->value->dblValue;
+    return errorNodeLocal->value->dblValue;
 }
 
 //-----------------------------------------------------------------------------
@@ -1009,27 +1013,33 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
         PUT( "\\subsection{ Уравнение касательной в точке }\n" )
         PUT( "Ну и запросы у тебя, уравнение касательной в точке захотел. Ладно. Хорошо. "
              "А ты знал, что это очень просто сделать: $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
-             "Руководствуясь этим, получаем следующее:\n\\\\\n" )
+             "Руководствуясь этим, получаем уравнение "
+             "касательной к графику в точке %s = %d:\n\\\\\n", varName, 0 )
 
         Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
 
-        DiffGraphDump( tangentNode, "Simplify Taylor" ); // Dump
-
-        PUT( "\n\n$$ t(%s) = ", varName )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
-
-        PUT( "Буквально чуть-чуть упростим и получим уравнение "
-             "касательной к графику в точке %s = %d:\n\\\\\n", varName, 0 )
-
-        Simplify( tangentNode );
+        DiffGraphDump( tangentNode, "Tangent" ); // Dump
 
         PUT( "\n\n$$ t(%s) = ", varName )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
 
         //
 
-        int errors[] = { 2, 3 };
-        VarValue arrVarValue[] = { {"x", 2}, {"n", 3} };
+        PUT( "\\subsection{ Погрешность }" )
+        PUT( "Ну что там еще, хочешь лабу быстро делать, а знаешь сколько я училась такому. "
+             "Ну ладно, напрягусь разок. Но это последний, понял? Вообще это предельно легко сделать: "
+            "$\\sigma = \\sqrt{ (f'_a \\cdot da)^2 + \\dots + (f'_z \\cdot dz)^2 }$. "
+            "Ну давай, используя это, помогу тебе:\n\\\\\n" )
 
-        LOG( "%lf", CalcErrorAtPoint( node, arrVarValue, errors, 2 ) );
+        VarValue errors[]      = { {"dx", 2}, {"dn", 4} };
+        VarValue arrVarValue[] = { {"x",  2}, {"n",  3} };
+
+        Node* errorNode = NULL;
+
+        double error = CalcErrorAtPoint( node, arrVarValue, errors, 2, &errorNode );
+
+        DiffGraphDump( errorNode, "Error" );
+
+        PUT( "\n\n$$ \\sigma = ", varName )  TEX_FORMULA( errorNode )  PUT( " = %lf $$\n\n", error ) 
     }
     PUT( "\n\n\\end{document}\n" );
 
@@ -1172,7 +1182,7 @@ Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val )
     Node*  fX_0       = FuncSubstituteVarValues( node,     varName, val );
     Node*  calcedNode = FuncSubstituteVarValues( diffNode, varName, val );
 
-    Node*            newNode = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  ); 
+    Node*            newNode = ADD(  MUL( calcedNode, CREATE_VAR_NODE( varName ) ), SUB( fX_0, MUL( calcedNode, CREATE_VAL_NODE( val ) ) )  ); 
     LinkNodeParents( newNode, NULL );
     Simplify       ( newNode );
 
