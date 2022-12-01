@@ -301,7 +301,7 @@ Node* CreateNode( int type, double dbl, int op, char* var, Node* left, Node* rig
     return newNode;
 }
 
-Node* CopyNode( Node* node )
+Node* CopyNode( const Node* node )
 {
     ASSERT( node != NULL, 0 );
 
@@ -364,7 +364,7 @@ int ReplaceNode( Node* node, Node* newNode )
 // Differentiate
 //-----------------------------------------------------------------------------
 
-Node* DifferentiateNode( Node* node, const char* varName )
+Node* DifferentiateNode( const Node* node, const char* varName )
 {
     ASSERT( node        != NULL, 0 );
     ASSERT( node->value != NULL, 0 );
@@ -432,18 +432,15 @@ Node* DifferentiateNode( Node* node, const char* varName )
 
                 case OP_LN:
                     return MUL(  DIV( CREATE_VAL_NODE(1), CR ), DR  );
-
-                default:
-                    return node;
             }
         default:
             break;
     }
 
-    return node;
+    return ( Node* )node;
 }
 
-int IsVarInTree( Node* node, const char* varName )
+int IsVarInTree( const Node* node, const char* varName )
 {
     ASSERT( node    != NULL, 0 );
     ASSERT( varName != NULL, 0 )
@@ -484,11 +481,11 @@ int LinkNodeParents( Node* node, Node* parent )
     return 1; 
 }
 
-Node* Differentiate( Node* node, const char* varName )
+Node* Differentiate( const Node* node, const char* varName )
 {
     ASSERT( node != NULL, 0 );
 
-    Node* newNode = node;
+    Node* newNode = ( Node* )node;
 
     newNode = DifferentiateNode( newNode, varName );
     LinkNodeParents( newNode, NULL );
@@ -496,15 +493,16 @@ Node* Differentiate( Node* node, const char* varName )
     return newNode;
 }
 
-Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
+Node* DifferentiateN( const Node* node, const char* varName, int n, FILE* file )
 {
     ASSERT( node    != NULL, 0 );
     ASSERT( varName != NULL, 0 );
     ASSERT( file    != NULL, 0 );
  
-    if( n <= 0 ) return node;
+    if( n <= 0 ) return ( Node* )node;
 
-    Node* newNode = node;
+
+    Node* newNode = ( Node* )node;
 
 #define PRINT_RAND_PHRASE \
     if( file != NULL ) fprintf( file, "\n%s:\n", LinkExprs[ Rand(0, NumLinkExprs - 1) ] );
@@ -545,60 +543,27 @@ Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file )
 // Simplify
 //-----------------------------------------------------------------------------
 
-double GetChildNodeValue( Node* node, int side, VarValue arrVarValue[], int num )
-{
-
-// L or R child is value or not
-#define IS_SIDE_VAL \
-    ( side == LEFT_SIDE ) ? IS_L_VAL : IS_R_VAL
-
-// L or R child is variable or not
-#define IS_SIDE_VAR \
-    ( side == LEFT_SIDE ) ? IS_L_VAR : IS_R_VAR 
-
-#define VAL \
-    ( side == LEFT_SIDE ) ? L_VAL : R_VAL
-
-#define VAR \
-    ( side == LEFT_SIDE ) ? L_VAR : R_VAR
-
-
-    if/* */( IS_SIDE_VAL ) return VAL;
-    else if( IS_SIDE_VAR )
-    {
-        for( int i = 0; i < num; i++ )
-        {
-            if( arrVarValue[i].var && !strcmp( VAR, arrVarValue[i].var ) ) 
-            {
-                return arrVarValue[i].value;
-            }
-        }
-    }
-
-
-#undef IS_SIDE_VAL
-#undef IS_SIDE_VAR
-#undef VAL
-#undef VAR
-
-    return POISON_DBL;
-}
-
-Node* GetSimplifiedConstantNode( Node* node, VarValue arrVarValue[], int num )
+Node* GetSimplifiedConstantNode( Node* node )
 {
     ASSERT( node != NULL, NULL );
 
     if( node->value == NULL || !IS_OP ) return NULL;
 
-    double l_val = GetChildNodeValue( node, LEFT_SIDE,  arrVarValue, num );
-    if(    l_val == POISON_DBL && IS_L_EXISTS    ) return NULL;
-
-    double r_val = GetChildNodeValue( node, RIGHT_SIDE, arrVarValue, num );
-    if(    r_val == POISON_DBL    ) return NULL;
     
-    // if/* */( IS_R_VAL )                                         r_val = R_VAL;
-    // else if( IS_R_VAR && varName && !strcmp( R_VAR, varName ) ) r_val = val;
-    // else return NULL;
+    double l_val = 0, r_val = 0;
+
+    if( IS_L_VAL ) 
+    {
+        l_val = L_VAL;
+    }
+    else if( !( !IS_L_EXISTS && IS_R_EXISTS ) ) return NULL;
+
+    if( IS_R_VAL ) 
+    {
+        r_val = R_VAL;
+    }
+    else return NULL;
+
 
     // Simplify 
     int opNum = node->value->opValue;
@@ -633,28 +598,21 @@ Node* GetSimplifiedConstantNode( Node* node, VarValue arrVarValue[], int num )
     return NULL;
 }
 
-Node* GetSimplifiedConstantNode( Node* node, const char* varName, double val )
-{
-    VarValue varValue = { varName, val };
-
-    return GetSimplifiedConstantNode( node, &varValue, 1 );
-}
-
-int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* varName, double val )
+int SimplifyConstantsRecursively( Node* node, int* isWasSimpled )
 {
     ASSERT( node != NULL, 0 );
     
     if( node->left )
     {
-        SimplifyConstantsRecursively( node->left, isWasSimpled, varName, val );
+        SimplifyConstantsRecursively( node->left, isWasSimpled );
     }
 
     if( node->right )
     {
-        SimplifyConstantsRecursively( node->right, isWasSimpled, varName, val );
+        SimplifyConstantsRecursively( node->right, isWasSimpled );
     }
 
-    Node* newNode = GetSimplifiedConstantNode( node, varName, val );
+    Node* newNode = GetSimplifiedConstantNode( node );
 
     if( newNode )
     {                
@@ -666,13 +624,13 @@ int SimplifyConstantsRecursively( Node* node, int* isWasSimpled, const char* var
     return 1;
 }
 
-int SimplifyConstants( Node* node, const char* varName, double val )
+int SimplifyConstants( Node* node )
 {
     ASSERT( node != NULL, -1 );
 
     int isWasSimpled = false;
 
-    SimplifyConstantsRecursively( node, &isWasSimpled, varName, val );
+    SimplifyConstantsRecursively( node, &isWasSimpled );
 
     return isWasSimpled;
 }
@@ -815,17 +773,73 @@ int Simplify( Node* node )
 //-----------------------------------------------------------------------------
 
 
-// Calculate value at point
+// Calculate value/error at point
 //-----------------------------------------------------------------------------
 
-Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* answer )
+int FuncSubstituteVarValuesRecursively( const Node* node, const VarValue arrVarValue[], int num )
+{
+    ASSERT( node        != NULL, 0 );
+    ASSERT( arrVarValue != NULL, 0 );
+
+    if( IS_VAR )
+    {
+        for( int i = 0; i < num; i++ )
+        {
+            if( !strcmp( node->value->varValue, arrVarValue[i].var ) )
+            {
+                Node* valNode = CREATE_VAL_NODE( arrVarValue[i].value );
+                
+                valNode->left  = node->left;
+                valNode->right = node->right; 
+                
+                ReplaceNode( ( Node* )node, valNode );
+            }
+        }
+    }
+
+    if( node->left )
+    {
+        FuncSubstituteVarValuesRecursively( node->left,  arrVarValue, num );
+    }
+    
+    if( node->right )
+    {
+        FuncSubstituteVarValuesRecursively( node->right, arrVarValue, num );
+    }
+
+    return 1;
+}
+
+Node* FuncSubstituteVarValues( const Node* node, const VarValue arrVarValue[], int num )
+{
+    ASSERT( node        != NULL, NULL );
+    ASSERT( arrVarValue != NULL, NULL );
+
+    Node* newNode = CopyNode( node );
+
+    FuncSubstituteVarValuesRecursively( newNode, arrVarValue, num );
+    Simplify( newNode );
+
+    return newNode;
+}
+
+Node* FuncSubstituteVarValues( const Node* node, const char* varName, double val )
 {
     ASSERT( node    != NULL, NULL );
     ASSERT( varName != NULL, NULL );
 
-    Node* newNode = CopyNode( node );
+    VarValue varValue = { varName, val }; 
 
-    SimplifyConstants( newNode, varName, val );
+    return FuncSubstituteVarValues( node, &varValue, 1 );
+}
+
+Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int num, double* answer )
+{
+    ASSERT( node        != NULL, NULL );
+    ASSERT( arrVarValue != NULL, NULL );
+
+    Node*     newNode = FuncSubstituteVarValues( node, arrVarValue, num );
+    Simplify( newNode );
 
     if( !newNode->left && !newNode->right && answer ) 
     {
@@ -834,10 +848,51 @@ Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* ans
     else if( answer )
     {
         (*answer) = POISON_DBL;
-    }
+    } 
 
     return newNode;
+}
+
+Node* CalcValueAtPoint( const Node* node, const char* varName, double val, double* answer )
+{
+    ASSERT( node    != NULL, NULL );
+    ASSERT( varName != NULL, NULL );
+
+    VarValue varValue = { varName, val };
+
+    return CalcValueAtPoint( node, &varValue, 1, answer );
 }  
+
+double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const int errors[], int num )
+{
+    ASSERT( node        != NULL, NULL );
+    ASSERT( arrVarValue != NULL, NULL );
+
+    Node* newNode = CREATE_VAL_NODE( 0 );
+
+    for( int i = 0; i < num; i++ )
+    {
+        Node* diffNode = Differentiate( node, arrVarValue[i].var );
+
+        diffNode = FuncSubstituteVarValues( diffNode, arrVarValue, num );
+
+        Node*     tempNode = POW(  MUL( diffNode, CREATE_VAL_NODE( errors[i] ) ), CREATE_VAL_NODE( 2 )  );
+        Simplify( tempNode );
+
+        if( i > 0 ) newNode = ADD( newNode, tempNode );
+    }
+
+    DiffGraphDump( newNode, "Error" );
+
+    Node*     errorNode = POW(  newNode, CREATE_VAL_NODE( 0.5 )  );
+    Simplify( errorNode );
+
+    DiffGraphDump( errorNode, "Error" );
+    
+    if( newNode->left || newNode->right ) printf( "ERROR: missing variable value...\n" );
+    
+    return newNode->value->dblValue;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -901,6 +956,12 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
             "\\maketitle\n\n" );
     { // Tex body
 
+        Node* nNode = FuncSubstituteVarValues( node, "x", 2 );
+        DiffGraphDump( nNode, "asdfasfdsa" );
+
+        Simplify( nNode );
+        DiffGraphDump( nNode, "asdfasfdsa" );
+        
         PUT( "\\subsection{ Производная }\n" )
         PUT( "Перец блин ашалел, когда такую функцию увидел:\n" )
         
@@ -952,6 +1013,8 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
 
+        DiffGraphDump( tangentNode, "Simplify Taylor" ); // Dump
+
         PUT( "\n\n$$ t(%s) = ", varName )  TEX_FORMULA( tangentNode )  PUT( " $$\n\n" ) 
 
         PUT( "Буквально чуть-чуть упростим и получим уравнение "
@@ -963,8 +1026,10 @@ int CreateDiffTexFile( const char* texFileName, Node* node, int nDiff, const cha
 
         //
 
+        int errors[] = { 2, 3 };
+        VarValue arrVarValue[] = { {"x", 2}, {"n", 3} };
 
-
+        LOG( "%lf", CalcErrorAtPoint( node, arrVarValue, errors, 2 ) );
     }
     PUT( "\n\n\\end{document}\n" );
 
@@ -1053,7 +1118,7 @@ Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0
     ASSERT( node    != NULL, 0 );
     ASSERT( varName != NULL, 0 );
 
-    Node* newNode  = CalcValueAtPoint( node, varName, x_0 );
+    Node* newNode  = FuncSubstituteVarValues( node, varName, x_0 );
     Node* diffNode = node;
 
     int currFact = 1;
@@ -1068,7 +1133,7 @@ Node* ExpandIntoTaylorSeries( Node* node, const char* varName, int n, double x_0
         
         diffNode = Differentiate( diffNode, varName );
 
-        Node* calcedNode = CalcValueAtPoint( diffNode, varName, x_0 );
+        Node* calcedNode = FuncSubstituteVarValues( diffNode, varName, x_0 );
 
         newNode = ADD(  newNode, DIV( MUL( calcedNode, POW( SUB_NODE, CREATE_VAL_NODE( i ) ) ), CREATE_VAL_NODE( currFact ) )  );
     }
@@ -1108,7 +1173,9 @@ Node* GetTangentEquationAtPoint( Node* node, const char* varName, double val )
 
     Node*  calcedNode = CalcValueAtPoint( diffNode, varName, val );
 
-    Node*  newNode    = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  );
+    Node*     newNode = ADD(  MUL( calcedNode, SUB( CREATE_VAR_NODE( varName ), CREATE_VAL_NODE( val ) ) ), fX_0  );
+    Simplify( newNode );
+
     return newNode;
 }
 

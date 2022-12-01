@@ -124,29 +124,32 @@ int PrintDiffNodeValue( char* str, Node* node );
 int PrintFormula( Node* node, FILE* file = stdout, int formulaType = FormulaType::COMMON );
 
 Node* CreateNode( int type = 0, double dbl = 0, int op = 0, char* var = NULL, Node* left = NULL, Node* right = NULL, Node* parent = NULL );
-Node* CopyNode( Node* node );
-int   SetNodeParent( Node* node, Node* parent );
-int   ReplaceNode  ( Node* node, Node* newNode );
+Node* CopyNode     ( const Node* node );
+int   SetNodeParent(       Node* node, Node* parent );
+int   ReplaceNode  (       Node* node, Node* newNode );
 
 int LinkNodeParents( Node* node, Node* parent );
 
-Node* Differentiate ( Node* node, const char* varName = "x" );
-Node* DifferentiateN( Node* node, const char* varName, int n, FILE* file = NULL );
+Node* Differentiate ( const Node* node, const char* varName = "x" );
+Node* DifferentiateN( const Node* node, const char* varName, int n, FILE* file = NULL );
 
-int IsVarInTree( Node* node, const char* varName = "x" );
+int IsVarInTree( const Node* node, const char* varName = "x" );
 
-double GetChildNodeValue( Node* node, int side, VarValue arrVarValue[], int num );
-
-Node* GetSimplifiedConstantNode( Node* node, VarValue    arrVarValue[],  int    num );
-Node* GetSimplifiedConstantNode( Node* node, const char* varName = NULL, double val = 0 ); 
+Node* GetSimplifiedConstantNode( Node* node);
 Node* GetSimplifiedNeutralNode ( Node* node );
 
-int SimplifyConstants( Node* node, const char* varName = NULL, double val = 0 );
+int SimplifyConstants( Node* node );
 int SimplifyNeutrals ( Node* node );
 
 int Simplify( Node* node );
 
-Node* CalcValueAtPoint( Node* node, const char* varName, double val, double* answer = NULL );
+Node* FuncSubstituteVarValues( const Node* node, const char*    varName,       double val );
+Node* FuncSubstituteVarValues( const Node* node, const VarValue arrVarValue[], int    num );
+
+Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int    num, double* answer = NULL );
+Node* CalcValueAtPoint( const Node* node, const char*    varName,       double val, double* answer = NULL );
+
+double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const int errors[], int num );
 
 // Latex
 // {

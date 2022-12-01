@@ -1,4 +1,4 @@
-sin((x)-(2))
+(x)^(2)
 n diff:
 2
 name of var to diff:
@@ -7,3 +7,6 @@ n Taylor:
 3
 Tangent point x_0:
 2
+Measurement error:
+1
+x = 2 pm 0.001
