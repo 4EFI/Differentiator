@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "stack.h"
 #include "str_algs.h"
+#include "build_tree_rec.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,7 +105,6 @@ static int NumUnaryOperations = sizeof( UnaryOperations ) / sizeof( int );
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffDataTree( const char* diffDataTree, Node* node );
 int LoadDiffDataNums( String* diffDataStrs, int numStrs, int* nDiff, char* varName, int* nTaylor );
 
 int IsUnaryOperation( int  numOp, 

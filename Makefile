@@ -1,4 +1,8 @@
 
+READER = build_tree
+
+SOURCES = config dsl $(READER)
+
 ifeq ($(OS),Windows_NT)
 	OUTPUT_FILE_NAME = main.exe
 else

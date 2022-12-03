@@ -17,9 +17,6 @@ int main()
 {
     srand( time( NULL ) );
     
-    Node       diffTree = { 0 };
-    NodeCtor( &diffTree );
-    
     const char* fileDataName = "diff_data.txt";
     FILE* file = fopen( fileDataName, "r" ); 
 
@@ -31,7 +28,7 @@ int main()
     int numStrs = DivideStr( diffData, &diffDataStrs );
 
     // LoadTree
-    LoadDiffDataTree( diffDataStrs[0].str, &diffTree );
+    Node* diffTree = LoadDiffDataTree( diffDataStrs[0].str );
 
     // Load Nums
     int nDiff = 0, nTaylor = 0;
@@ -42,7 +39,7 @@ int main()
 
     const char* fileTexName = "Manual.tex";
 
-    CreateDiffTexFile( fileTexName, &diffTree, nDiff, varName, nTaylor );
+    CreateDiffTexFile( fileTexName, diffTree, nDiff, varName, nTaylor );
     CreatePdfFromTex ( fileTexName );
 
     printf( "\n" );
