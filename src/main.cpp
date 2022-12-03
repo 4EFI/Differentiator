@@ -33,6 +33,13 @@ int main()
     // Load Nums
     int nDiff = 0, nTaylor = 0;
     char varName[ MaxStrLen ] = "";
+
+    double xTaylor = 0;
+    
+    int numValues = 0;
+    VarValue* arrVarValue = NULL;
+    VarValue* errors      = NULL; 
+
     LoadDiffDataNums( diffDataStrs, numStrs, &nDiff, varName, &nTaylor );
 
     LOG( "nDiff = %d varName = \"%s\" nTaylor = %d", nDiff, varName, nTaylor );

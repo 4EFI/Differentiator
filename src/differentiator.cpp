@@ -24,7 +24,9 @@ FILE* FileDiffDump = fopen( FileDiffDumpName, "w" );
 
 //-----------------------------------------------------------------------------
 
-int LoadDiffDataNums( String* diffDataStrs, int numStrs, int* nDiff, char* varName, int* nTaylor )
+int LoadDiffDataNums( String* diffDataStrs, int numStrs, 
+                      int* nDiff, char* varName, 
+                      int* nTaylor )
 {
     ASSERT( diffDataStrs != NULL, 0 );
 
@@ -867,8 +869,7 @@ int CreateDiffTexFile( const char* texFileName,
                        Node*       node, 
                        int         nDiff, 
                        const char* varName, 
-                       int         nTaylor
-                     /*  double      xTaylor, */)
+                       int         nTaylor )
 {
     ASSERT( texFileName != NULL, 0 );
     

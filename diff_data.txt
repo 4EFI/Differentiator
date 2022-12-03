@@ -9,5 +9,4 @@ Tangent point x_0:
 3
 Measurement error:
 1
-Error:
-x = 2 pm 0.001
+x = 2 dx = 0.001
