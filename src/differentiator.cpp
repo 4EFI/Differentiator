@@ -858,8 +858,8 @@ int PrintBeginTex( FILE* texFile )
              "\\usepackage{wrapfig}\n"
              "\n"
              "\\date{\\today}\n"
-             "\\author{ Тот самый Супер Перец с Б01-208 }\n"
-             "\\title{ \\textbf{ Методичка } } \n\n" );  
+             "\\author{      01-208 }\n"
+             "\\title{ \\textbf{  } } \n\n" );  
     }
 
     return 1;
@@ -887,12 +887,12 @@ int CreateDiffTexFile( const char* texFileName,
             "\\maketitle\n\n" );
     { // Tex body
         
-        PUT( "\\subsection{ Производная }\n" )
-        PUT( "Перец блин ашалел, когда такую функцию увидел:\n" )
+        PUT( "\\subsection{  }\n" )
+        PUT( "  ,    :\n" )
         
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$\n\n" ) 
 
-        PUT( "Дай хоть посмотрю на тебя, может проще станет...\n" )
+        PUT( "    ,   ...\n" )
 
         DiffGraphDump( node, "Original" ); // Dump
     
@@ -901,17 +901,17 @@ int CreateDiffTexFile( const char* texFileName,
 
         IncludeImgToTex( graphName, texFile, 0.8 );
 
-        PUT( "Мдааааа, ну и говнище. Стоп. Какую-какую производную брать? %d? " 
-             "Ты меня за кого принимаешь, за прогу, которая может взять любую производную? "
-             "А блин, меня же учили на первом курсе, ладно, давай сюда свою функцию:\n\\\\\n", nDiff )
+        PUT( ",   . . -  ? %d? " 
+             "    ,  ,     ? "
+             " ,      , ,    :\n\\\\\n", nDiff )
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
         //
 
-        PUT( "\\subsection{ Разложение в ряд Тейлора }\n" )
-        PUT( "А я и не знал, что я так умею. Ну раз n-ую производную взял, то и в ряд Тейлора разложу. "
-             "Ну что же, давай попробую, может что и выйдет:\n\\\\\n" )
+        PUT( "\\subsection{     }\n" )
+        PUT( "    ,    .   n-  ,      . "
+             "  ,  ,    :\n\\\\\n" )
 
         Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor, 2 );
 
@@ -919,23 +919,23 @@ int CreateDiffTexFile( const char* texFileName,
 
         DiffGraphDump( taylorNode, "Taylor" ); // Dump
 
-        PUT( "Давай я чутка упрощу, а то громоздко выгядит:\n" )
+        PUT( "   ,    :\n" )
         
         Simplify( taylorNode );
 
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
 
-        PUT( "Ну вот, совсем другое дело, оказалось и не так сложно, а главное все очевидно.\n\n" )
+        PUT( " ,   ,     ,    .\n\n" )
 
         DiffGraphDump( taylorNode, "Simplify Taylor" ); // Dump
 
         //
 
-        PUT( "\\subsection{ Уравнение касательной в точке }\n" )
-        PUT( "Ну и запросы у тебя, уравнение касательной в точке захотел. Ладно. Хорошо. "
-             "А ты знал, что это очень просто сделать: $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
-             "Руководствуясь этим, получаем уравнение "
-             "касательной к графику в точке %s = %d:\n\\\\\n", varName, 0 )
+        PUT( "\\subsection{     }\n" )
+        PUT( "    ,     . . . "
+             "  ,     : $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
+             " ,   "
+             "     %s = %d:\n\\\\\n", varName, 0 )
 
         Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
 
@@ -945,11 +945,11 @@ int CreateDiffTexFile( const char* texFileName,
 
         //
 
-        PUT( "\\subsection{ Погрешность }" )
-        PUT( "Ну что там еще, хочешь лабу быстро делать, а знаешь сколько я училась такому. "
-             "Ну ладно, напрягусь разок. Но это последний, понял? Вообще это предельно легко сделать: "
+        PUT( "\\subsection{  }" )
+        PUT( "   ,    ,      . "
+             " ,  .   , ?     : "
             "$\\sigma = \\sqrt{ (f'_a \\cdot da)^2 + \\dots + (f'_z \\cdot dz)^2 }$. "
-            "Ну давай, используя это, помогу тебе:\n\\\\\n" )
+            " ,  ,  :\n\\\\\n" )
 
         VarValue errors[]      = { {"dx", 2}, {"dn", 4} };
         VarValue arrVarValue[] = { {"x",  2}, {"n",  3} };
