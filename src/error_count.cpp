@@ -35,25 +35,27 @@ int main()
 
     DiffGraphDump( treeEq );
 
+    const char* fileDataOutName = "data_out02.txt"; // FileOut name
+    FILE* fileDataOut = fopen( fileDataOutName, "w" ); 
+
     for( int i = 1; i < numStrs; i++ )
     {
         VarValue* varValues = NULL;
         VarValue* errors    = NULL; 
 
-        int num = LoadLabData( &varValues, &errors, diffDataStrs[i].str );
+        int  num = LoadLabData( &varValues, &errors, diffDataStrs[i].str );
+        if( !num ) break;
 
         double ans   = CalcValueAtPoint( treeEq, varValues, num );
         double error = CalcErrorAtPoint( treeEq, varValues, errors, num );
 
-        LOG( "ans = %lf +- %lf", ans, error );
-
-        break;
+        fprintf( fileDataOut, "%lf %lf\n", ans, error );
+        LOG( "ans = %lf +- %lf\n", ans, error );
     }
 
-    printf( "\n" );
-
     fclose( file );
-    free( labData );
+    fclose( fileDataOut );
+    free  ( labData );
 }
 
 //----------------------------------------------------------------------------- 

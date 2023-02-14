@@ -8,6 +8,7 @@
 #include "LOG.h"
 
 #include <string.h>
+#include <math.h>
 #include <ctype.h>
 
 //-----------------------------------------------------------------------------
@@ -200,7 +201,7 @@ Node* GetVar( char** str )
 
 Node* GetNumber( char** str )
 {
-	double val   = 0;
+	double val = 0;
 
     const char* sOld = *str;
 	
@@ -210,9 +211,24 @@ Node* GetNumber( char** str )
         (*str)++; 
     }
 
+	double fraction = 0;
+	int    dblSize  = 0;
+
+	if( **str == '.' )
+	{
+		(*str)++;
+
+		while( '0' <= **str && **str <= '9' )
+		{
+			fraction = fraction * 10 + (**str) - '0';
+			(*str)++; 
+			dblSize++;
+		}
+	}
+
 	assert( *str != sOld );
 	
-	return CREATE_VAL_NODE( val );
+	return CREATE_VAL_NODE( val + fraction / pow( 10, dblSize ) );
 }
 
 //-----------------------------------------------------------------------------
