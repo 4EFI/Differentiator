@@ -756,7 +756,7 @@ Node* FuncSubstituteVarValues( const Node* node, const char* varName, double val
     return FuncSubstituteVarValues( node, &varValue, 1 );
 }
 
-Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int num, double* answer )
+double CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int num, Node** ansNode )
 {
     ASSERT( node        != NULL, NULL );
     ASSERT( arrVarValue != NULL, NULL );
@@ -764,26 +764,24 @@ Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int num,
     Node*     newNode = FuncSubstituteVarValues( node, arrVarValue, num );
     Simplify( newNode );
 
-    if( !newNode->left && !newNode->right && answer ) 
-    {
-        (*answer) = newNode->value->dblValue;
-    }
-    else if( answer )
-    {
-        (*answer) = POISON_DBL;
-    } 
+    if( ansNode ) *ansNode = newNode;
 
-    return newNode;
+    if( !newNode->left && !newNode->right ) 
+    {
+        return newNode->value->dblValue;
+    }
+    
+    return POISON_DBL;
 }
 
-Node* CalcValueAtPoint( const Node* node, const char* varName, double val, double* answer )
+double CalcValueAtPoint( const Node* node, const char* varName, double val, Node** ansNode )
 {
     ASSERT( node    != NULL, NULL );
     ASSERT( varName != NULL, NULL );
 
     VarValue varValue = { varName, val };
 
-    return CalcValueAtPoint( node, &varValue, 1, answer );
+    return CalcValueAtPoint( node, &varValue, 1, ansNode );
 }  
 
 double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const VarValue errors[], int num, Node** errorNode )
@@ -809,7 +807,7 @@ double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const V
     Node* errorNodeLocal = POW(  newNode, CREATE_VAL_NODE( 0.5 )  );
 
     LinkNodeParents( errorNodeLocal, NULL );
-    Simplify       ( errorNodeLocal );
+    Simplify       ( errorNodeLocal );    
 
     if( errorNode ) *errorNode = errorNodeLocal;
 
@@ -858,8 +856,8 @@ int PrintBeginTex( FILE* texFile )
              "\\usepackage{wrapfig}\n"
              "\n"
              "\\date{\\today}\n"
-             "\\author{ ˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜ ˜ ˜01-208 }\n"
-             "\\title{ \\textbf{ ˜˜˜˜˜˜˜˜˜ } } \n\n" );  
+             "\\author{ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½01-208 }\n"
+             "\\title{ \\textbf{ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ } } \n\n" );  
     }
 
     return 1;
@@ -887,12 +885,12 @@ int CreateDiffTexFile( const char* texFileName,
             "\\maketitle\n\n" );
     { // Tex body
         
-        PUT( "\\subsection{ ˜˜˜˜˜˜˜˜˜˜˜ }\n" )
-        PUT( "˜˜˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜, ˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜:\n" )
+        PUT( "\\subsection{ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ }\n" )
+        PUT( "ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:\n" )
         
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( node )  PUT( " $$\n\n" ) 
 
-        PUT( "˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜ ˜˜˜˜, ˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜...\n" )
+        PUT( "ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...\n" )
 
         DiffGraphDump( node, "Original" ); // Dump
     
@@ -901,17 +899,17 @@ int CreateDiffTexFile( const char* texFileName,
 
         IncludeImgToTex( graphName, texFile, 0.8 );
 
-        PUT( "˜˜˜˜˜˜˜, ˜˜ ˜ ˜˜˜˜˜˜˜. ˜˜˜˜. ˜˜˜˜˜-˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜? %d? " 
-             "˜˜ ˜˜˜˜ ˜˜ ˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜, ˜˜ ˜˜˜˜˜, ˜˜˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜? "
-             "˜ ˜˜˜˜, ˜˜˜˜ ˜˜ ˜˜˜˜˜ ˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜, ˜˜˜˜˜, ˜˜˜˜˜ ˜˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜˜:\n\\\\\n", nDiff )
+        PUT( "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½? %d? " 
+             "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½? "
+             "ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:\n\\\\\n", nDiff )
 
         Node* newNode = DifferentiateN( node, varName, nDiff, texFile );
 
         //
 
-        PUT( "\\subsection{ ˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜ ˜˜˜˜˜˜˜ }\n" )
-        PUT( "˜ ˜ ˜ ˜˜ ˜˜˜˜, ˜˜˜ ˜ ˜˜˜ ˜˜˜˜. ˜˜ ˜˜˜ n-˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜, ˜˜ ˜ ˜ ˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜. "
-             "˜˜ ˜˜˜ ˜˜, ˜˜˜˜˜ ˜˜˜˜˜˜˜˜, ˜˜˜˜˜ ˜˜˜ ˜ ˜˜˜˜˜˜:\n\\\\\n" )
+        PUT( "\\subsection{ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ }\n" )
+        PUT( "ï¿½ ï¿½ ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ ï¿½ï¿½ï¿½ n-ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. "
+             "ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:\n\\\\\n" )
 
         Node* taylorNode = ExpandIntoTaylorSeries( node, varName, nTaylor, 2 );
 
@@ -919,23 +917,23 @@ int CreateDiffTexFile( const char* texFileName,
 
         DiffGraphDump( taylorNode, "Taylor" ); // Dump
 
-        PUT( "˜˜˜˜˜ ˜ ˜˜˜˜˜ ˜˜˜˜˜˜, ˜ ˜˜ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜:\n" )
+        PUT( "ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:\n" )
         
         Simplify( taylorNode );
 
         PUT( "\n\n$$ f(x) = " )  TEX_FORMULA( taylorNode )  PUT( " $$\n\n" ) 
 
-        PUT( "˜˜ ˜˜˜, ˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜, ˜˜˜˜˜˜˜˜˜ ˜ ˜˜ ˜˜˜ ˜˜˜˜˜˜, ˜ ˜˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜.\n\n" )
+        PUT( "ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.\n\n" )
 
         DiffGraphDump( taylorNode, "Simplify Taylor" ); // Dump
 
         //
 
-        PUT( "\\subsection{ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜ }\n" )
-        PUT( "˜˜ ˜ ˜˜˜˜˜˜˜ ˜ ˜˜˜˜, ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜. ˜˜˜˜˜. ˜˜˜˜˜˜. "
-             "˜ ˜˜ ˜˜˜˜, ˜˜˜ ˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜: $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
-             "˜˜˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜, ˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜ "
-             "˜˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜ %s = %d:\n\\\\\n", varName, 0 )
+        PUT( "\\subsection{ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ }\n" )
+        PUT( "ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. "
+             "ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: $t(x) = f^{(1)}(x)(x - x_0) + f(x_0)$. "
+             "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "
+             "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ %s = %d:\n\\\\\n", varName, 0 )
 
         Node* tangentNode = GetTangentEquationAtPoint( node, varName, 2 );
 
@@ -945,11 +943,11 @@ int CreateDiffTexFile( const char* texFileName,
 
         //
 
-        PUT( "\\subsection{ ˜˜˜˜˜˜˜˜˜˜˜ }" )
-        PUT( "˜˜ ˜˜˜ ˜˜˜ ˜˜˜, ˜˜˜˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜, ˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜. "
-             "˜˜ ˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜. ˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜, ˜˜˜˜˜? ˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜: "
+        PUT( "\\subsection{ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ }" )
+        PUT( "ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. "
+             "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: "
             "$\\sigma = \\sqrt{ (f'_a \\cdot da)^2 + \\dots + (f'_z \\cdot dz)^2 }$. "
-            "˜˜ ˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜ ˜˜˜, ˜˜˜˜˜˜ ˜˜˜˜:\n\\\\\n" )
+            "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½:\n\\\\\n" )
 
         VarValue errors[]      = { {"dx", 2}, {"dn", 4} };
         VarValue arrVarValue[] = { {"x",  2}, {"n",  3} };
@@ -1015,8 +1013,7 @@ int CreateFuncGraphImg( Node* node, const char* imgName, double xMin, double xMa
 
     for( double x = xMin; x <= xMax; x += 0.0001 )
     {
-        double ans = 0;
-        CalcValueAtPoint( node, "x", x, &ans );
+        double ans = CalcValueAtPoint( node, "x", x );
 
         if( ans == POISON_DBL ) 
         {

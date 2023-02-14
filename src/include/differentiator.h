@@ -21,13 +21,13 @@ static const double POISON_DBL = 0xBAADF00D32DEAD32;
 
 static const char* LinkExprs[] = 
 {
-    "Ну я думаю, если с пивком посидеть подумать, то получается следующее",
-    "Вот только скажите, что не очевидно следующее выражение",
-    "Все уже поняли, что",
-    "Моя мама сказала, что будет так, значит будет так",
-    "Следующее выражение предлагаю получить вам самостоятельно",
-    "Следующее выражение остается как упражнение",
-    "Сам М-А-А-А-А-К-Р-О-С получил следующее"
+    "пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+    "пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+    "пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ",
+    "пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ",
+    "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+    "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+    "пїЅпїЅпїЅ пїЅ-пїЅ-пїЅ-пїЅ-пїЅ-пїЅ-пїЅ-пїЅ-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
 };
 
 const int NumLinkExprs = sizeof( LinkExprs ) / sizeof( char* );
@@ -151,8 +151,8 @@ int Simplify( Node* node );
 Node* FuncSubstituteVarValues( const Node* node, const char*    varName,       double val );
 Node* FuncSubstituteVarValues( const Node* node, const VarValue arrVarValue[], int    num );
 
-Node* CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int    num, double* answer = NULL );
-Node* CalcValueAtPoint( const Node* node, const char*    varName,       double val, double* answer = NULL );
+double CalcValueAtPoint( const Node* node, const VarValue arrVarValue[], int    num, Node** ansNode = NULL );
+double CalcValueAtPoint( const Node* node, const char*    varName,       double val, Node** ansNode = NULL );
 
 double CalcErrorAtPoint( const Node* node, const VarValue arrVarValue[], const VarValue errors[], int num, Node** errorNode = NULL );
 

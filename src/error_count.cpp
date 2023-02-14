@@ -41,8 +41,11 @@ int main()
         VarValue* errors    = NULL; 
 
         int num = LoadLabData( &varValues, &errors, diffDataStrs[i].str );
-        
-        //if( num ) break;
+
+        double ans   = CalcValueAtPoint( treeEq, varValues, num );
+        double error = CalcErrorAtPoint( treeEq, varValues, errors, num );
+
+        LOG( "ans = %lf +- %lf", ans, error );
 
         break;
     }
@@ -60,9 +63,53 @@ int LoadLabData( VarValue** varValues, VarValue** errors, const char* str )
     ASSERT( varValues != NULL, -1 )
     ASSERT( errors    != NULL, -1 )
 
-    LOG( "%s", str );
+    char* str_ptr = ( char* )str;
 
-    return 1;
+    int num = 0;
+    while( true )
+    {
+        char   tempStr[ MaxStrLen ] = "";
+        double dbl;
+
+        int numReadSyms = 0;
+        int numRead     = sscanf( str_ptr, "%s %lf%n", tempStr, &dbl, &numReadSyms );
+
+        str_ptr += numReadSyms;
+
+        if( numRead <= 0 ) break;
+
+        num++;
+    }
+
+    num /= 2;
+
+    LOG( "Num = %d", num );
+    
+    *varValues = ( VarValue* )calloc( num, sizeof( VarValue ) );
+    *errors    = ( VarValue* )calloc( num, sizeof( VarValue ) );
+
+    str_ptr = ( char* )str;
+
+    for( int i = 0; i < num; i++ )
+    {
+        char* varValueStr = ( char* )calloc( MaxStrLen, 1 );
+        char* errorStr    = ( char* )calloc( MaxStrLen, 1 );
+        
+        int numReadSyms = 0;
+        sscanf( str_ptr, "%s %lf %s %lf%n", varValueStr, &(*varValues)[i].value,
+                                            errorStr,    &(*errors)   [i].value,
+                                           &numReadSyms                          );
+
+        (*varValues)[i].var = varValueStr;
+        (*errors)   [i].var = errorStr;
+
+        str_ptr += numReadSyms;
+
+        LOG( "%s %lf %s %lf", (*varValues)[i].var, (*varValues)[i].value, 
+                              (*errors)   [i].var, (*errors)   [i].value );
+    }
+
+    return num;
 }
 
 //----------------------------------------------------------------------------- 
